@@ -48,7 +48,7 @@ bool initSDL(void) {
 		}
 
 		//start fullscreen
-		SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		//SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 
 	//initialize SDL image
@@ -98,11 +98,11 @@ bool initGame(void) {
 	}
 
 	//initialize input variables
-	input.joypad = NULL;
+	input.gamepad = NULL;
 	input.deadzone = 8000;
 
 	//initialize joypad
-	initJoypad();
+	initGamepad();
 
 	//Load the sprite atlases to be used
 	app.fontsAndUI = initSpriteAtlas("gfx/AsteroidsCloneFontsAndUI.png");
@@ -129,8 +129,8 @@ void close(void) {
 	deleteSpriteAtlas(app.gameplaySprites);
 
 	//close joypad
-	SDL_JoystickClose(input.joypad);
-	input.joypad = NULL;
+	SDL_GameControllerClose(input.gamepad);
+	input.gamepad = NULL;
 
 	//Clean up renderer
 	SDL_DestroyRenderer(app.renderer);
