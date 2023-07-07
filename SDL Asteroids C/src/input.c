@@ -5,8 +5,6 @@
 extern App app;
 extern InputManager input;
 
-//checking for a change
-
 //window was resized; update certain constants
 static void handleWindowResize(const SDL_WindowEvent* event) {
 	//data1 and data2 seem to be the window's width and height
@@ -42,77 +40,77 @@ static void doKeyDown(const SDL_KeyboardEvent* event)
 	if (event->repeat == 0 && event->keysym.scancode >= 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) {
 		input.keyboard[event->keysym.scancode] = true;
 
-		//update most recently used controller (keyboard and mouse or joypad)
+		//update most recently used controller (keyboard and mouse or gamepad)
 		input.lastControllerType = LCT_KEYBOARD_AND_MOUSE;
 	}
 }
 
-//initializes joypad and handles controller connection and disconnection
+//initializes gamepad and handles controller connection and disconnection
 //not static b/c init.c uses this too
-void initJoypad(void) {
-	//reset joypad
-	if (input.joypad != NULL) {
-		SDL_JoystickClose(input.joypad);
-		//Fun fact: if input.joypad isn't NULLed, SDL_NumJoysticks throws an exception in visual studio!
+void initGamepad(void) {
+	//reset gamepad
+	if (input.gamepad != NULL) {
+		SDL_GameControllerClose(input.gamepad);
+		//Fun fact: if input.gamepad isn't NULLed, SDL_NumJoysticks throws an exception in visual studio!
 		//This is why NULLing pointers when they point to deallocated memory is important.
-		input.joypad = NULL;
+		input.gamepad = NULL;
 	}
 
-	//number of joypads
+	//number of gamepads
 	int n;
 
-	//find out how many joypads there are
+	//find out how many gamepads there are
 	if (SDL_NumJoysticks() != 0) {
 		n = SDL_NumJoysticks();
 	}
 	else {
-		//no joypads found; none connected or some other problem
-		printf("No joypads found: %s\n", SDL_GetError());
+		//no gamepads found; none connected or some other problem
+		printf("No gamepads found: %s\n", SDL_GetError());
 		return;
 	}
 
-	printf("%d joypad(s) available.\n", n);
+	printf("%d gamepad(s) available.\n", n);
 
-	//go through the available joypads and use the first one found
+	//go through the available gamepads and use the first one found
 	for (int i = 0; i < n; i++) {
-		input.joypad = SDL_JoystickOpen(i);
+		//only initialize joystick if it's a valid gamepad
+		if(SDL_IsGameController(i))
+			input.gamepad = SDL_GameControllerOpen(i);
 
-		//check for NULL in case the user disconnected the joypad
-		if (input.joypad != NULL) {
-			printf("Joypad name: %s\n", SDL_JoystickNameForIndex(i));
-			printf("Joypad axes: %d\n", SDL_JoystickNumAxes(input.joypad));
-			printf("Joypad buttons: %d\n", SDL_JoystickNumButtons(input.joypad));
+		//check for NULL in case the user disconnected the gamepad
+		if (input.gamepad != NULL) {
+			printf("Gamepad name: %s\n", SDL_GameControllerName(input.gamepad));
 
 			return;
 		}
 	}
 }
 
-//joypad control handling
-static void doButtonUp(const SDL_JoyButtonEvent* event)
+//gamepad control handling
+static void doGamepadButtonUp(const SDL_ControllerButtonEvent* event)
 {
-	if (event->state == SDL_RELEASED && event->button < MAX_JOYPAD_BUTTONS) {
-		input.joypadButtons[event->button] = false;
+	if (event->state == SDL_RELEASED && event->button < SDL_CONTROLLER_BUTTON_MAX) {
+		input.gamepadButtons[event->button] = false;
 	}
 }
 
-static void doButtonDown(const SDL_JoyButtonEvent* event)
+static void doGamepadButtonDown(const SDL_ControllerButtonEvent* event)
 {
-	if (event->state == SDL_PRESSED && event->button < MAX_JOYPAD_BUTTONS) {
-		input.joypadButtons[event->button] = true;
+	if (event->state == SDL_PRESSED && event->button < SDL_CONTROLLER_BUTTON_MAX) {
+		input.gamepadButtons[event->button] = true;
 
-		//update most recently used controller (keyboard and mouse or joypad)
-		input.lastControllerType = LCT_JOYPAD;
+		//update most recently used controller (keyboard and mouse or gamepad)
+		input.lastControllerType = LCT_GAMEPAD;
 	}
 }
 
-static void doJoyAxis(const SDL_JoyAxisEvent* event)
+static void doGamepadAxis(const SDL_ControllerAxisEvent* event)
 {
-	if (event->axis < MAX_JOYPAD_AXES) {
-		input.joypadAxes[event->axis] = event->value;
+	if (event->axis < SDL_CONTROLLER_AXIS_MAX) {
+		input.gamepadAxes[event->axis] = event->value;
 
-		//update most recently used controller (keyboard and mouse or joypad)
-		input.lastControllerType = LCT_JOYPAD;
+		//update most recently used controller (keyboard and mouse or gamepad)
+		input.lastControllerType = LCT_GAMEPAD;
 	}
 }
 
@@ -124,7 +122,7 @@ static void doMouseButtonUp(const SDL_MouseButtonEvent* event) {
 static void doMouseButtonDown(const SDL_MouseButtonEvent* event) {
 	input.mouse.buttons[event->button] = true;
 
-	//update most recently used controller (keyboard and mouse or joypad)
+	//update most recently used controller (keyboard and mouse or gamepad)
 	input.lastControllerType = LCT_KEYBOARD_AND_MOUSE;
 }
 
@@ -137,54 +135,54 @@ static void doGameplayInput(void) {
 	input.pause = false;
 
 	//directional input
-	if (input.joypad != NULL && ((abs(input.joypadAxes[0]) > input.deadzone || abs(input.joypadAxes[1]) > input.deadzone))) {
-		//joystick input
-		input.lr = input.joypadAxes[0];
-		input.ud = input.joypadAxes[1];
+	if (input.gamepad != NULL && ((abs(input.gamepadAxes[0]) > input.deadzone || abs(input.gamepadAxes[1]) > input.deadzone))) {
+		//analog stick input
+		input.lr = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTX];
+		input.ud = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTY];
 	}
 	else {
-		//do keyboard input if there's no controller plugged in or if there's no joystick input
+		//do keyboard input if there's no controller plugged in or if there's no analog stick input
 		
 		//find direction
 		input.lr = (input.keyboard[SDL_SCANCODE_D] - input.keyboard[SDL_SCANCODE_A]);
 		input.ud = (input.keyboard[SDL_SCANCODE_S] - input.keyboard[SDL_SCANCODE_W]);
 
-		//for compatability with the joysticks, direction along an axis will be either 0, JOYPAD_AXIS_MAX, or JOYPAD_AXIS_MIN
+		//for compatability with the analog sticks, direction along an axis will be either 0, gamepad_AXIS_MAX, or gamepad_AXIS_MIN
 		if (input.lr > 0) {
-			input.lr = JOYPAD_AXIS_MAX;
+			input.lr = GAMEPAD_AXIS_MAX;
 		}
 		if (input.lr < 0) {
-			input.lr = JOYPAD_AXIS_MIN;
+			input.lr = GAMEPAD_AXIS_MIN;
 		}
 		if (input.ud > 0) {
-			input.ud = JOYPAD_AXIS_MAX;
+			input.ud = GAMEPAD_AXIS_MAX;
 		}
 		if (input.ud < 0) {
-			input.ud = JOYPAD_AXIS_MIN;
+			input.ud = GAMEPAD_AXIS_MIN;
 		}
 	}
 
 	//normalize directions
 	//technically off by ~.00001 when in a negative direction but who cares
 	if (abs(input.lr) > input.deadzone || abs(input.ud > input.deadzone)) {
-		input.lr /= JOYPAD_AXIS_MAX;
-		input.ud /= JOYPAD_AXIS_MAX;
+		input.lr /= GAMEPAD_AXIS_MAX;
+		input.ud /= GAMEPAD_AXIS_MAX;
 	}
 
 	//buttons
 
 	//left click or r1 to fire/confirm
-	if (input.mouse.buttons[SDL_BUTTON_LEFT] || input.joypadButtons[5]) {
+	if (input.mouse.buttons[SDL_BUTTON_LEFT] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER]) {
 		input.fire = true;
 	}
 
 	//right click or circle to go back
-	if (input.mouse.buttons[SDL_BUTTON_RIGHT] || input.joypadButtons[2]) {
+	if (input.mouse.buttons[SDL_BUTTON_RIGHT] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_B]) {
 		input.back = true;
 	}
 
 	//esc or options to pause
-	if (input.keyboard[SDL_SCANCODE_ESCAPE] || input.joypadButtons[2]) {
+	if (input.keyboard[SDL_SCANCODE_ESCAPE] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_START]) {
 		input.pause = true;
 	}
 }
@@ -217,19 +215,19 @@ void handleInput(void)
 
 		case SDL_JOYDEVICEADDED:
 		case SDL_JOYDEVICEREMOVED:
-			initJoypad();
+			initGamepad();
 			break;
 
-		case SDL_JOYBUTTONUP:
-			doButtonUp(&event.jbutton);
+		case SDL_CONTROLLERBUTTONUP:
+			doGamepadButtonUp(&event.cbutton);
 			break;
 
-		case SDL_JOYBUTTONDOWN:
-			doButtonDown(&event.jbutton);
+		case SDL_CONTROLLERBUTTONDOWN:
+			doGamepadButtonDown(&event.cbutton);
 			break;
 
-		case SDL_JOYAXISMOTION:
-			doJoyAxis(&event.jaxis);
+		case SDL_CONTROLLERAXISMOTION:
+			doGamepadAxis(&event.caxis);
 			break;
 
 		case SDL_MOUSEBUTTONUP:
@@ -249,7 +247,7 @@ void handleInput(void)
 	if (event.type == SDL_MOUSEWHEEL) {
 		input.mouse.wheel = event.wheel.y;
 
-		//determine most recently used controller (keyboard and mouse or joypad)
+		//determine most recently used controller (keyboard and mouse or gamepad)
 		input.lastControllerType = LCT_KEYBOARD_AND_MOUSE;
 	}
 	else {

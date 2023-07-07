@@ -38,17 +38,17 @@ typedef struct {
 //enum for last controller detected
 typedef enum {
 	LCT_KEYBOARD_AND_MOUSE,
-	LCT_JOYPAD
+	LCT_GAMEPAD
 } LastControllerType;
 
 //Stores input
 typedef struct {
 	//raw input data
-	SDL_Joystick *joypad;	//the joypad to be used in-game
+	SDL_GameController *gamepad;	//the gamepad to be used in-game
 	Mouse mouse; //Holds mouse position
 	bool	keyboard[MAX_KEYBOARD_KEYS];	//holds raw keyboard input
-	bool	joypadButtons[MAX_JOYPAD_BUTTONS];	//holds raw joypad button input
-	int		joypadAxes[MAX_JOYPAD_BUTTONS];	//holds raw joypad axis input
+	bool	gamepadButtons[SDL_CONTROLLER_BUTTON_MAX];	//holds raw gamepad button input
+	int		gamepadAxes[SDL_CONTROLLER_AXIS_MAX];	//holds raw gamepad axis input
 
 	//gameplay control interface
 	//only these variables should be used for checking for inputs outside of handleInput
@@ -58,7 +58,7 @@ typedef struct {
 	bool fire;	//fire/confirm button
 	bool back;	//go back button
 	bool pause;	//pause button
-	LastControllerType lastControllerType;	//keeps track of the controller type most recently used (keyboard and mouse or joypad)
+	LastControllerType lastControllerType;	//keeps track of the controller type most recently used (keyboard and mouse or gamepad)
 } InputManager;
 
 #endif
