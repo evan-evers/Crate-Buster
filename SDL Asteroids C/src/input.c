@@ -5,6 +5,8 @@
 extern App app;
 extern InputManager input;
 
+//checking for a change
+
 //window was resized; update certain constants
 static void handleWindowResize(const SDL_WindowEvent* event) {
 	//data1 and data2 seem to be the window's width and height
