@@ -30,7 +30,7 @@ SDL_Texture* loadTexture(char* filename) {
 }
 
 //Blit a sprite to the screen at the specified coordinates.
-void blitSprite(const Sprite* sprite, int x, int y) {
+void blitSprite(const Sprite* sprite, int x, int y, SpriteCenter center) {
 	SDL_Rect src;
 
 	src.x = sprite->srcX;
@@ -40,17 +40,55 @@ void blitSprite(const Sprite* sprite, int x, int y) {
 
 	SDL_Rect dest;
 
-	dest.x = x;
-	dest.y = y;
 	dest.w = sprite->w;
 	dest.h = sprite->h;
+
+	//blit the sprite with the specified center of orientation
+	switch (center) {
+		case(SC_TOP_LEFT):
+			dest.x = x;
+			dest.y = y;
+		break;
+		case(SC_TOP_CENTER):
+			dest.x = x - dest.w * 0.5;
+			dest.y = y;
+		break;
+		case(SC_TOP_RIGHT):
+			dest.x = x - dest.w;
+			dest.y = y;
+			break;
+		case(SC_CENTER_LEFT):
+			dest.x = x;
+			dest.y = y - dest.h * 0.5;
+			break;
+		case(SC_CENTER):
+			dest.x = x - dest.w * 0.5;
+			dest.y = y - dest.h * 0.5;
+			break;
+		case(SC_CENTER_RIGHT):
+			dest.x = x - dest.w;
+			dest.y = y - dest.h * 0.5;
+			break;
+		case(SC_BOTTOM_LEFT):
+			dest.x = x;
+			dest.y = y - dest.h;
+			break;
+		case(SC_BOTTOM_CENTER):
+			dest.x = x - dest.w * 0.5;
+			dest.y = y - dest.h;
+			break;
+		case(SC_BOTTOM_RIGHT):
+			dest.x = x - dest.w;
+			dest.y = y - dest.h;
+			break;
+	}
 
 	SDL_RenderCopy(app.renderer, sprite->atlas->texture, &src, &dest);
 }
 
 //Blit a sprite to the screen at the specified coordinates, with rotation around an origin, flipping and alpha modulation.
 //Pass NULL into the origin to rotate around the center of the destination rectangle.
-void blitSpriteEX(const Sprite* sprite, int x, int y, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha) {
+void blitSpriteEX(const Sprite* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha) {
 	SDL_Rect src;
 
 	src.x = sprite->srcX;
@@ -60,17 +98,55 @@ void blitSpriteEX(const Sprite* sprite, int x, int y, float angle, const SDL_Poi
 
 	SDL_Rect dest;
 
-	dest.x = x;
-	dest.y = y;
 	dest.w = sprite->w;
 	dest.h = sprite->h;
+
+	//blit the sprite with the specified center of orientation
+	switch (center) {
+	case(SC_TOP_LEFT):
+		dest.x = x;
+		dest.y = y;
+		break;
+	case(SC_TOP_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y;
+		break;
+	case(SC_TOP_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y;
+		break;
+	case(SC_CENTER_LEFT):
+		dest.x = x;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_CENTER_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_BOTTOM_LEFT):
+		dest.x = x;
+		dest.y = y - dest.h;
+		break;
+	case(SC_BOTTOM_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y - dest.h;
+		break;
+	case(SC_BOTTOM_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y - dest.h;
+		break;
+	}
 
 	SDL_SetTextureAlphaMod(sprite->atlas->texture, alpha);
 	SDL_RenderCopyEx(app.renderer, sprite->atlas->texture, &src, &dest, angle, origin, flip);
 }
 
 //Blit a SpriteAnimated to the screen at the specified coordinates and update its animation.
-void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y) {
+void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCenter center) {
 	//blitting
 	SDL_Rect src;
 
@@ -96,10 +172,48 @@ void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y) {
 
 	SDL_Rect dest;
 
-	dest.x = x;
-	dest.y = y;
 	dest.w = sprite->w;
 	dest.h = sprite->h;
+
+	//blit the sprite with the specified center of orientation
+	switch (center) {
+	case(SC_TOP_LEFT):
+		dest.x = x;
+		dest.y = y;
+		break;
+	case(SC_TOP_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y;
+		break;
+	case(SC_TOP_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y;
+		break;
+	case(SC_CENTER_LEFT):
+		dest.x = x;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_CENTER_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_BOTTOM_LEFT):
+		dest.x = x;
+		dest.y = y - dest.h;
+		break;
+	case(SC_BOTTOM_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y - dest.h;
+		break;
+	case(SC_BOTTOM_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y - dest.h;
+		break;
+	}
 
 	SDL_RenderCopy(app.renderer, sprite->atlas->texture, &src, &dest);
 
@@ -128,7 +242,7 @@ void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y) {
 
 //Blit a SpriteAnimated to the screen at the specified coordinates and update its animation. Supports rotation around an origin, flipping and alpha modulation.
 //Pass NULL into the origin to rotate around the center of the destination rectangle.
-void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha) {
+void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha) {
 	//blitting
 	SDL_Rect src;
 
@@ -151,10 +265,48 @@ void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, float a
 
 	SDL_Rect dest;
 
-	dest.x = x;
-	dest.y = y;
 	dest.w = sprite->w;
 	dest.h = sprite->h;
+
+	//blit the sprite with the specified center of orientation
+	switch (center) {
+	case(SC_TOP_LEFT):
+		dest.x = x;
+		dest.y = y;
+		break;
+	case(SC_TOP_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y;
+		break;
+	case(SC_TOP_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y;
+		break;
+	case(SC_CENTER_LEFT):
+		dest.x = x;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_CENTER_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y - dest.h * 0.5;
+		break;
+	case(SC_BOTTOM_LEFT):
+		dest.x = x;
+		dest.y = y - dest.h;
+		break;
+	case(SC_BOTTOM_CENTER):
+		dest.x = x - dest.w * 0.5;
+		dest.y = y - dest.h;
+		break;
+	case(SC_BOTTOM_RIGHT):
+		dest.x = x - dest.w;
+		dest.y = y - dest.h;
+		break;
+	}
 
 	SDL_SetTextureAlphaMod(sprite->atlas->texture, alpha);
 	SDL_RenderCopyEx(app.renderer, sprite->atlas->texture, &src, &dest, angle, origin, flip);

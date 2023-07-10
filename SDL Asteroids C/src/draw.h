@@ -13,6 +13,18 @@ typedef struct {
 	int h;	//height in pixels
 } SpriteAtlas;
 
+typedef enum {
+	SC_TOP_LEFT,
+	SC_TOP_CENTER,
+	SC_TOP_RIGHT,
+	SC_CENTER_LEFT,
+	SC_CENTER,
+	SC_CENTER_RIGHT,
+	SC_BOTTOM_LEFT,
+	SC_BOTTOM_CENTER,
+	SC_BOTTOM_RIGHT
+} SpriteCenter;
+
 //A static, unanimated sprite from the sprite atlas.
 typedef struct {
 	SpriteAtlas* atlas;	//pointer to source
@@ -49,10 +61,10 @@ typedef struct {
 void prepareScene(void);
 void presentScene(void);
 SDL_Texture* loadTexture(char* filename);
-void blitSprite(const Sprite* sprite, int x, int y);
-void blitSpriteEX(const Sprite* sprite, int x, int y, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
-void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y);
-void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
+void blitSprite(const Sprite* sprite, int x, int y, SpriteCenter center);
+void blitSpriteEX(const Sprite* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
+void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCenter center);
+void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
 
 //initializers (all use dynamic allocation, make sure to free())
 SpriteAtlas* initSpriteAtlas(char* filename);

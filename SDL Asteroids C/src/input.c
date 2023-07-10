@@ -109,8 +109,8 @@ static void doGamepadAxis(const SDL_ControllerAxisEvent* event)
 	if (event->axis < SDL_CONTROLLER_AXIS_MAX) {
 		input.gamepadAxes[event->axis] = event->value;
 
-		//update most recently used controller (keyboard and mouse or gamepad)
-		input.lastControllerType = LCT_GAMEPAD;
+		//NOTE: don't update input.lastControllerType here
+		//because this gets called every frame (presumably b/c of stick drift)
 	}
 }
 
@@ -126,47 +126,72 @@ static void doMouseButtonDown(const SDL_MouseButtonEvent* event) {
 	input.lastControllerType = LCT_KEYBOARD_AND_MOUSE;
 }
 
+static void doMouseWheel(const SDL_MouseWheelEvent* event) {
+
+}
+
 static void doGameplayInput(void) {
 	//initialize all controls in unpressed/neutral positions
-	input.lr = 0;
-	input.ud = 0;
+	input.leftLR = 0;
+	input.leftUD = 0;
+	input.rightLR = 0;
+	input.rightUD = 0;
 	input.fire = false;
-	input.back = false;
+	input.dash = false;
 	input.pause = false;
 
 	//directional input
-	if (input.gamepad != NULL && ((abs(input.gamepadAxes[0]) > input.deadzone || abs(input.gamepadAxes[1]) > input.deadzone))) {
+	if (input.gamepad != NULL && (abs(input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTX]) > input.deadzone || abs(input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTY]) > input.deadzone)) {
 		//analog stick input
-		input.lr = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTX];
-		input.ud = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTY];
+		input.leftLR = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTX];
+		input.leftUD = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTY];
 	}
 	else {
-		//do keyboard input if there's no controller plugged in or if there's no analog stick input
+		//do keyboard/d-pad input if there's no controller plugged in or if there's no analog stick input
 		
 		//find direction
-		input.lr = (input.keyboard[SDL_SCANCODE_D] - input.keyboard[SDL_SCANCODE_A]);
-		input.ud = (input.keyboard[SDL_SCANCODE_S] - input.keyboard[SDL_SCANCODE_W]);
+		if (input.lastControllerType == LCT_KEYBOARD_AND_MOUSE) {
+			input.leftLR = (input.keyboard[SDL_SCANCODE_D] - input.keyboard[SDL_SCANCODE_A]);
+			input.leftUD = (input.keyboard[SDL_SCANCODE_S] - input.keyboard[SDL_SCANCODE_W]);
+		}
+		else {
+			input.leftLR = (input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] - input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_LEFT]);
+			input.leftUD = (input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_DOWN] - input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_UP]);
+		}
 
 		//for compatability with the analog sticks, direction along an axis will be either 0, gamepad_AXIS_MAX, or gamepad_AXIS_MIN
-		if (input.lr > 0) {
-			input.lr = GAMEPAD_AXIS_MAX;
+		if (input.leftLR > 0) {
+			input.leftLR = GAMEPAD_AXIS_MAX;
 		}
-		if (input.lr < 0) {
-			input.lr = GAMEPAD_AXIS_MIN;
+		if (input.leftLR < 0) {
+			input.leftLR = GAMEPAD_AXIS_MIN;
 		}
-		if (input.ud > 0) {
-			input.ud = GAMEPAD_AXIS_MAX;
+		if (input.leftUD > 0) {
+			input.leftUD = GAMEPAD_AXIS_MAX;
 		}
-		if (input.ud < 0) {
-			input.ud = GAMEPAD_AXIS_MIN;
+		if (input.leftUD < 0) {
+			input.leftUD = GAMEPAD_AXIS_MIN;
 		}
+	}
+
+	//look-around input
+	//mouse is also used for this in this game, but that's kept seperate in this case b/c consolidating those two things seems unwise
+	if (input.gamepad != NULL && (abs(input.gamepadAxes[SDL_CONTROLLER_AXIS_RIGHTX]) > input.deadzone || abs(input.gamepadAxes[SDL_CONTROLLER_AXIS_RIGHTY]) > input.deadzone)) {
+		//analog stick input
+		input.rightLR = input.gamepadAxes[SDL_CONTROLLER_AXIS_RIGHTX];
+		input.rightUD = input.gamepadAxes[SDL_CONTROLLER_AXIS_RIGHTY];
 	}
 
 	//normalize directions
 	//technically off by ~.00001 when in a negative direction but who cares
-	if (abs(input.lr) > input.deadzone || abs(input.ud > input.deadzone)) {
-		input.lr /= GAMEPAD_AXIS_MAX;
-		input.ud /= GAMEPAD_AXIS_MAX;
+	if (abs(input.leftLR) > input.deadzone || abs(input.leftUD > input.deadzone)) {
+		input.leftLR /= GAMEPAD_AXIS_MAX;
+		input.leftUD /= GAMEPAD_AXIS_MAX;
+	}
+
+	if (abs(input.rightLR) > input.deadzone || abs(input.rightUD > input.deadzone)) {
+		input.rightLR /= GAMEPAD_AXIS_MAX;
+		input.rightUD /= GAMEPAD_AXIS_MAX;
 	}
 
 	//buttons
@@ -178,7 +203,7 @@ static void doGameplayInput(void) {
 
 	//right click or circle to go back
 	if (input.mouse.buttons[SDL_BUTTON_RIGHT] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_B]) {
-		input.back = true;
+		input.dash = true;
 	}
 
 	//esc or options to pause
@@ -236,6 +261,10 @@ void handleInput(void)
 
 		case SDL_MOUSEBUTTONDOWN:
 			doMouseButtonDown(&event.button);
+			break;
+
+		case SDL_MOUSEWHEEL:
+
 			break;
 
 		default:

@@ -48,15 +48,17 @@ typedef struct {
 	Mouse mouse; //Holds mouse position
 	bool	keyboard[MAX_KEYBOARD_KEYS];	//holds raw keyboard input
 	bool	gamepadButtons[SDL_CONTROLLER_BUTTON_MAX];	//holds raw gamepad button input
-	int		gamepadAxes[SDL_CONTROLLER_AXIS_MAX];	//holds raw gamepad axis input
+	int		gamepadAxes[SDL_CONTROLLER_AXIS_MAX];	//holds raw gamepad axis inputs
 
 	//gameplay control interface
 	//only these variables should be used for checking for inputs outside of handleInput
-	float lr;	//hold left-right directional input
-	float ud;	//hold up-down directional input
+	float leftLR;	//holds left-right directional input for left analog stick
+	float leftUD;	//holds up-down directional input for left analog stick
+	float rightLR;	//holds left-right directional input for right analog stick
+	float rightUD;	//holds up-down directional input for right analog stick
 	int deadzone;	//joystick deadzone
 	bool fire;	//fire/confirm button
-	bool back;	//go back button
+	bool dash;	//dash/go back button
 	bool pause;	//pause button
 	LastControllerType lastControllerType;	//keeps track of the controller type most recently used (keyboard and mouse or gamepad)
 } InputManager;
