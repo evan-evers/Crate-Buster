@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\bullets.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\definitions.h" />
     <ClInclude Include="src\draw.h" />
@@ -26,15 +27,20 @@
     <ClInclude Include="src\init.h" />
     <ClInclude Include="src\input.h" />
     <ClInclude Include="src\player.h" />
+    <ClInclude Include="src\random.h" />
+    <ClInclude Include="src\stage.h" />
     <ClInclude Include="src\structs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\bullet.c" />
     <ClCompile Include="src\draw.c" />
     <ClCompile Include="src\geometry.c" />
     <ClCompile Include="src\init.c" />
     <ClCompile Include="src\input.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\player.c" />
+    <ClCompile Include="src\random.c" />
+    <ClCompile Include="src\stage.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

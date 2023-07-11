@@ -8,9 +8,12 @@
 #include "init.h"
 #include "input.h"
 #include "player.h"
+#include "stage.h"
 
 App app;
 InputManager input;
+Player* player;
+Stage stage;
 
 int main(int argc, char* argv[]) {
 	//clear/initialize important structs
@@ -32,24 +35,22 @@ int main(int argc, char* argv[]) {
 		return 1;	//return with error code
 	}
 
-	Player* player = initPlayer(100,100);
+	initStage();
 
 	while (!app.quit) {
 		handleInput();
 
-		//logic here
-		updatePlayer(player);	//here temporarily
+		app.delegate.logic();
 
 		prepareScene();
 
-		//draw here
-		drawPlayer(player);	//here temporarily
+		app.delegate.draw();
 
 		presentScene();
 	}
 
 	//clean up
-	deletePlayer(player);	//this should go in a deleteStage or deleteRoom function once that's up and running
+	deleteStage();
 	close();
 
 	return 0;

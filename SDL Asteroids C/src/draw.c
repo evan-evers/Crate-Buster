@@ -154,7 +154,7 @@ void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCen
 	//if the frames are greater than the edge of the sprite atlas being grabbed from, this function draws the first frame of the animation as a default
 	//maybe at some point i'll add support for animations in multiple rows
 	//>= may also be the incorrect comparison operator for this if statement; I'm assuming 0-indexed coordinated on the image
-	if (sprite->srcX + sprite->w + ((int)sprite->currentFrame * SPRITE_ATLAS_CELL_W) >= sprite->atlas->w) {
+	if (sprite->srcX + sprite->w + ((int)sprite->currentFrame * sprite->w) >= sprite->atlas->w) {
 		//Possible bug: edge of sprite atlas exceeded
 		//The reason this is a possible bug and not a definite bug is because 
 		//using a non-existent frame past the end of the atlas can be useful 
@@ -164,7 +164,7 @@ void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCen
 	}
 	else {
 		//Normal case
-		src.x = sprite->srcX + ((int)sprite->currentFrame * SPRITE_ATLAS_CELL_W);
+		src.x = sprite->srcX + ((int)sprite->currentFrame * sprite->w);
 	}
 	src.y = sprite->srcY;
 	src.w = sprite->w;
@@ -250,14 +250,14 @@ void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteC
 	//if the frames are greater than the edge of the sprite atlas being grabbed from, this function draws the first frame of the animation as a default
 	//maybe at some point i'll add support for animations in multiple rows
 	//>= may also be the incorrect comparison operator for this if statement; I'm assuming 0-indexed coordinated on the image
-	if (sprite->srcX + sprite->w + ((int)sprite->currentFrame * SPRITE_ATLAS_CELL_W) >= sprite->atlas->w) {
+	if (sprite->srcX + sprite->w + ((int)sprite->currentFrame * sprite->w) >= sprite->atlas->w) {
 		//Possible bug: edge of sprite atlas exceeded
 		printf("WARNING - 'blitAndUpdateSpriteAnimatedEX' attempted to fetch pixels beyond the edge of its sprite atlas.\n");
 		src.x = sprite->srcX;
 	}
 	else {
 		//Normal case
-		src.x = sprite->srcX + ((int)sprite->currentFrame * SPRITE_ATLAS_CELL_W);
+		src.x = sprite->srcX + ((int)sprite->currentFrame * sprite->w);
 	}
 	src.y = sprite->srcY;
 	src.w = sprite->w;
@@ -336,7 +336,9 @@ void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteC
 
 
 
-//initializers (all use dynamic allocation, make sure to free()) and destructors
+//initializers and destructors
+//all use dynamic allocation, make sure to use free() and destructors
+//srcX, srcY, w and h are all in grid coordinates, not pixels
 
 //loads the atlas's texture and initializes its members
 SpriteAtlas* initSpriteAtlas(char* filename) {

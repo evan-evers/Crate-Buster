@@ -184,12 +184,12 @@ static void doGameplayInput(void) {
 
 	//normalize directions
 	//technically off by ~.00001 when in a negative direction but who cares
-	if (abs(input.leftLR) > input.deadzone || abs(input.leftUD > input.deadzone)) {
+	if (abs(input.leftLR) > input.deadzone || abs(input.leftUD) > input.deadzone) {
 		input.leftLR /= GAMEPAD_AXIS_MAX;
 		input.leftUD /= GAMEPAD_AXIS_MAX;
 	}
 
-	if (abs(input.rightLR) > input.deadzone || abs(input.rightUD > input.deadzone)) {
+	if (abs(input.rightLR) > input.deadzone || abs(input.rightUD) > input.deadzone) {
 		input.rightLR /= GAMEPAD_AXIS_MAX;
 		input.rightUD /= GAMEPAD_AXIS_MAX;
 	}

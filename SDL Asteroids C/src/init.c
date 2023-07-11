@@ -48,7 +48,7 @@ bool initSDL(void) {
 		}
 
 		//start fullscreen
-		SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		//SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 
 	//initialize SDL image
@@ -116,6 +116,9 @@ bool initGame(void) {
 		printf("ERROR - Gameplay sprites could not be loaded: %s\n", IMG_GetError());
 		success = false;
 	}
+
+	//randomize
+	srand(time(NULL));
 
 	return success;
 }

@@ -17,6 +17,7 @@
 
 //My stuff
 #include "definitions.h"
+#include "random.h"
 #include "structs.h"
 
 #endif

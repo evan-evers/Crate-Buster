@@ -2,9 +2,11 @@
 
 #include "player.h"
 #include "geometry.h"
+#include "bullets.h"
 
 extern App app;
 extern InputManager input;
+extern Player *player;
 
 static const float PLAYER_SPEED_MAX = 3;
 static const int DASH_TIME_MAX = 20;	//maximum amount of time spent in dash state
@@ -13,7 +15,7 @@ static const float DASH_SPEED_MAX = 10;	//maximum speed at start of dash state
 static const float ACCEL = 0.25;	//acceleration
 static const float DECCEL = 0.125;	//decelleration
 
-static void psNormal(Player* player) {
+static void psNormal() {
 	//movement
 
 	//update spaceship angle
@@ -24,7 +26,11 @@ static void psNormal(Player* player) {
 	}
 	else {
 		//angle spaceship in same direction as right stick
-		player->angle = atan2(input.rightUD, input.rightLR) * RADIANS_TO_DEGREES;
+		//if right stick isn't being held, angle the player with the left stick
+		if(fabs(input.rightLR) > 0 || fabs(input.rightUD) > 0)
+			player->angle = atan2(input.rightUD, input.rightLR) * RADIANS_TO_DEGREES;
+		else if (fabs(input.leftLR) > 0 || fabs(input.leftUD) > 0)
+			player->angle = atan2(input.leftUD, input.leftLR) * RADIANS_TO_DEGREES;
 	}
 
 	//calculate movement vector
@@ -56,6 +62,20 @@ static void psNormal(Player* player) {
 	if (player->y > SCREEN_HEIGHT)
 		player->y = SCREEN_HEIGHT;
 
+	//firing guns
+	if (--player->reload <= 0 && input.fire) {
+		firePlayerBullet();
+	}
+
+	//just for fun for now: weapon switching
+	if (input.pause) {
+		++player->weaponType;
+
+		if (player->weaponType >= WT_ENEMY) {
+			player->weaponType = WT_NORMAL;
+		}
+	}
+
 	//state changes
 	if (input.dash) {
 		//if player isn't inputting a direction, dash towards the cursor
@@ -70,7 +90,7 @@ static void psNormal(Player* player) {
 	}
 }
 
-static void psDashing(Player* player) {
+static void psDashing() {
 	//movement
 
 	//update spaceship angle
@@ -110,7 +130,7 @@ static void psDashing(Player* player) {
 }
 
 //update player every game step
-void updatePlayer(Player* player) {
+void updatePlayer() {
 	switch (player->state) {
 		case(PS_NORMAL):
 			psNormal(player);
@@ -124,7 +144,7 @@ void updatePlayer(Player* player) {
 }
 
 //draw player
-void drawPlayer(Player* player) {
+void drawPlayer() {
 	//draw sprite at center of player
 	blitSpriteEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, SC_TOP_LEFT, player->angle, NULL, SDL_FLIP_NONE, 255);
 	//flame's just magic-numbered into place
@@ -136,21 +156,24 @@ void drawPlayer(Player* player) {
 
 
 //initialize player at pos (x,y)
-Player* initPlayer(int x, int y) {
-	Player* player = malloc(sizeof(Player));
+void initPlayer(int x, int y) {
+	player = malloc(sizeof(Player));
 	player->x = x;
 	player->y = y;
 	player->angle = 0;
-	player->speed = 0;		//total speed
+	player->speed = 0;
 	player->state = PS_NORMAL;
+	player->dirVector.x = 0;
+	player->dirVector.y = 0;
+	player->dashTimer = 0;
+	player->reload = 0;
+	player->weaponType = WT_NORMAL;
 	player->shipSprite = initSprite(app.gameplaySprites, 0, 11, 3, 3);
 	player->shipFlame = initSpriteAnimated(app.gameplaySprites, 16, 15, 1, 1, 4, 0, 0.25, AL_LOOP);
-
-	return player;
 }
 
 //destruct player
-void deletePlayer(Player* player) {
+void deletePlayer() {
 	free(player->shipSprite);
 	free(player->shipFlame);
 	free(player);
