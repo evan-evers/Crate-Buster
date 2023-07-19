@@ -20,7 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\bullets.h" />
+    <ClInclude Include="src\colliders.h" />
+    <ClInclude Include="src\colors.h" />
     <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\crates.h" />
     <ClInclude Include="src\definitions.h" />
     <ClInclude Include="src\draw.h" />
     <ClInclude Include="src\geometry.h" />
@@ -33,6 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\bullet.c" />
+    <ClCompile Include="src\colliders.c" />
+    <ClCompile Include="src\colors.c" />
+    <ClCompile Include="src\crates.c" />
     <ClCompile Include="src\draw.c" />
     <ClCompile Include="src\geometry.c" />
     <ClCompile Include="src\init.c" />

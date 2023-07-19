@@ -5,6 +5,7 @@
 * Enums, structs and functions that deal with player and enemy bullets
 */
 
+#include "colliders.h"
 #include "geometry.h"
 
 //describes the types of weapons the player can fire
@@ -26,14 +27,14 @@ struct Bullet {
 	Vector2 dirVector;	//stores bullet direction (should always be normalized)
 	int ttl;		//time to live
 	WeaponType type;		//the type of weapon this bullet was fired from (aka the type of bullet this is)
-	SpriteAnimated* bulletSprite;
+	SpriteAnimated* sprite;
+	OBBCollider* collider;
 	Bullet* next;
 };
 
 void firePlayerBullet(void);
 void updateBullets(void);
 void drawBullets(void);
-void initBullets(void);
 void deleteBullets(void);
 
 #endif

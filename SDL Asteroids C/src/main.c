@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
 	//clear/initialize important structs
 	memset(&app, 0, sizeof(App));
 	app.quit = false;	//not technically necessary but I like this being explicit
+	app.debug = true;
 	memset(&input, 0, sizeof(InputManager));
 
 	//initialize SDL
@@ -34,6 +35,8 @@ int main(int argc, char* argv[]) {
 		close();
 		return 1;	//return with error code
 	}
+
+	resetInput();
 
 	initStage();
 

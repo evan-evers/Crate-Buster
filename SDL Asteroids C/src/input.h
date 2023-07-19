@@ -5,7 +5,8 @@
 * Function(s) to handle input.
 */
 
-void initJoypad(void);
+void resetInput(void);
+void initGamepad(void);
 void handleInput(void);
 
 #endif

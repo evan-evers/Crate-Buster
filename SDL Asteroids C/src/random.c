@@ -1,15 +1,16 @@
 #include <stdlib.h>
+#include <stdbool.h>
 
 //returns a random non-negative integer
-//upper bound included
+//upper bound not included
 int randInt(int upperBound) {
-	return rand() % upperBound + 1;
+	return rand() % upperBound;
 }
 
 //returns a random integer between lowerBound and upperBound
-//upper bound included
+//upper bound not included
 int randIntRange(int lowerBound, int upperBound) {
-	return rand() % (upperBound - lowerBound + 1) + lowerBound;
+	return rand() % (upperBound - lowerBound) + lowerBound;
 }
 
 //returns a random non-negative float
@@ -22,4 +23,9 @@ float randFloat(float upperBound) {
 //upper bound included
 float randFloatRange(float lowerBound, float upperBound) {
 	return ((float)rand() / (float)RAND_MAX) * (upperBound - lowerBound) + lowerBound;
+}
+
+//pass in a percent chance between 0.0f and 100.0f
+bool percentChance(float percentChance) {
+	return percentChance > randFloat(99.99999999999999);
 }

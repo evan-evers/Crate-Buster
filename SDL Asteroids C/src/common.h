@@ -16,6 +16,7 @@
 #include "SDL.h"
 
 //My stuff
+#include "colors.h"
 #include "definitions.h"
 #include "random.h"
 #include "structs.h"

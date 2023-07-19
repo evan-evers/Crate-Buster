@@ -7,11 +7,13 @@
 */
 
 //Utility functions
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define MIN(a, b) ((a < b) ? a : b)
+#define MAX(a, b) ((a > b) ? a : b)
 #define STRNCPY(dest, src, n) \
 	strncpy(dest, src, n);    \
 	dest[n - 1] = '\0'
+#define REPEAT(n) \
+	for(int i = 0; i < n; ++i)
 
 //Game macros
 #define SCREEN_WIDTH 640
@@ -27,7 +29,7 @@
 #define MAX_KEYBOARD_KEYS 150
 #define GAMEPAD_AXIS_MAX 32767
 #define GAMEPAD_AXIS_MIN -32768
-#define MAX_MOUSE_BUTTONS 10
+#define MAX_MOUSE_BUTTONS 50
 
 //Audio macros
 #define MAX_SND_CHANNELS 8

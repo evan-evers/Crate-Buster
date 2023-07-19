@@ -32,7 +32,7 @@ typedef struct {
 	int srcY;	//topmost cell coordinate in cells
 	int w;		//width of one frame in cells
 	int h;		//height of one frame in cells
-} Sprite;
+} SpriteStatic;
 
 //Specifies animation loop behavior.
 //AL stands for animation loop.
@@ -61,14 +61,14 @@ typedef struct {
 void prepareScene(void);
 void presentScene(void);
 SDL_Texture* loadTexture(char* filename);
-void blitSprite(const Sprite* sprite, int x, int y, SpriteCenter center);
-void blitSpriteEX(const Sprite* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
+void blitSprite(const SpriteStatic* sprite, int x, int y, SpriteCenter center);
+void blitSpriteEX(const SpriteStatic* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
 void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCenter center);
 void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
 
 //initializers (all use dynamic allocation, make sure to free())
 SpriteAtlas* initSpriteAtlas(char* filename);
-Sprite* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h);
+SpriteStatic* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h);
 SpriteAnimated* initSpriteAnimated(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h, int frames, float currentFrame, float spd, AnimationLoop loopBehavior);
 
 //destructor for spriteAtlas (call free() on other structs)

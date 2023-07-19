@@ -5,6 +5,36 @@
 extern App app;
 extern InputManager input;
 
+void resetInput(void);
+static void handleWindowResize(const SDL_WindowEvent* event);
+static void doKeyUp(const SDL_KeyboardEvent* event);
+static void doKeyDown(const SDL_KeyboardEvent* event);
+void initGamepad(void);
+static void doGamepadButtonUp(const SDL_ControllerButtonEvent* event);
+static void doGamepadButtonDown(const SDL_ControllerButtonEvent* event);
+static void doGamepadAxis(const SDL_ControllerAxisEvent* event);
+static void doMouseButtonUp(const SDL_MouseButtonEvent* event);
+static void doMouseButtonDown(const SDL_MouseButtonEvent* event);
+static void doGameplayInput(void);
+void handleInput(void);
+
+static const int INPUT_BUFFER_MAX = 5; //in frames/updates
+
+//resets input
+//should be called at game start and whenever input needs to be reset
+void resetInput(void) {
+	//go through and set all input to nothing
+	for (int i = 0; i < MAX_KEYBOARD_KEYS; ++i) {
+		input.keyboard[i] = IS_NONE;
+	}
+	for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
+		input.gamepadButtons[i] = IS_NONE;
+	}
+	for (int i = 0; i < MAX_MOUSE_BUTTONS; ++i) {
+		input.mouse.buttons[i] = IS_NONE;
+	}
+}
+
 //window was resized; update certain constants
 static void handleWindowResize(const SDL_WindowEvent* event) {
 	//data1 and data2 seem to be the window's width and height
@@ -28,17 +58,19 @@ static void handleWindowResize(const SDL_WindowEvent* event) {
 }
 
 //keyboard control handling
-static void doKeyUp(const SDL_KeyboardEvent* event)
-{
+static void doKeyUp(const SDL_KeyboardEvent* event) {
 	if (event->repeat == 0 && event->keysym.scancode >= 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) {
-		input.keyboard[event->keysym.scancode] = false;
+		//set none and released flags to 1
+		//released flag will be set back to 0 on next update in handleInput
+		input.keyboard[event->keysym.scancode] = IS_RELEASED;
 	}
 }
 
-static void doKeyDown(const SDL_KeyboardEvent* event)
-{
+static void doKeyDown(const SDL_KeyboardEvent* event) {
 	if (event->repeat == 0 && event->keysym.scancode >= 0 && event->keysym.scancode < MAX_KEYBOARD_KEYS) {
-		input.keyboard[event->keysym.scancode] = true;
+		//set held and pressed flags to 1
+		//pressed flag will be set back to 0 on next update in handleInput
+		input.keyboard[event->keysym.scancode] = IS_HELD | IS_PRESSED;
 
 		//update most recently used controller (keyboard and mouse or gamepad)
 		input.lastControllerType = LCT_KEYBOARD_AND_MOUSE;
@@ -87,25 +119,26 @@ void initGamepad(void) {
 }
 
 //gamepad control handling
-static void doGamepadButtonUp(const SDL_ControllerButtonEvent* event)
-{
+static void doGamepadButtonUp(const SDL_ControllerButtonEvent* event) {
 	if (event->state == SDL_RELEASED && event->button < SDL_CONTROLLER_BUTTON_MAX) {
-		input.gamepadButtons[event->button] = false;
+		//set none and released flags to 1
+		//released flag will be set back to 0 on next update in handleInput
+		input.gamepadButtons[event->button] = IS_RELEASED;
 	}
 }
 
-static void doGamepadButtonDown(const SDL_ControllerButtonEvent* event)
-{
+static void doGamepadButtonDown(const SDL_ControllerButtonEvent* event) {
 	if (event->state == SDL_PRESSED && event->button < SDL_CONTROLLER_BUTTON_MAX) {
-		input.gamepadButtons[event->button] = true;
+		//set held and pressed flags to 1
+		//pressed flag will be set back to 0 on next update in handleInput
+		input.gamepadButtons[event->button] = IS_HELD | IS_PRESSED;
 
 		//update most recently used controller (keyboard and mouse or gamepad)
 		input.lastControllerType = LCT_GAMEPAD;
 	}
 }
 
-static void doGamepadAxis(const SDL_ControllerAxisEvent* event)
-{
+static void doGamepadAxis(const SDL_ControllerAxisEvent* event) {
 	if (event->axis < SDL_CONTROLLER_AXIS_MAX) {
 		input.gamepadAxes[event->axis] = event->value;
 
@@ -116,47 +149,52 @@ static void doGamepadAxis(const SDL_ControllerAxisEvent* event)
 
 //mouse control handling (some is also done in handleInput)
 static void doMouseButtonUp(const SDL_MouseButtonEvent* event) {
-	input.mouse.buttons[event->button] = false;
+	//set none and released flags to 1
+	//released flag will be set back to 0 on next update in handleInput
+	input.mouse.buttons[event->button] = IS_RELEASED;
 }
 
 static void doMouseButtonDown(const SDL_MouseButtonEvent* event) {
-	input.mouse.buttons[event->button] = true;
+	//set held and pressed flags to 1
+	//pressed flag will be set back to 0 on next update in handleInput
+	input.mouse.buttons[event->button] = IS_HELD | IS_PRESSED;
 
 	//update most recently used controller (keyboard and mouse or gamepad)
 	input.lastControllerType = LCT_KEYBOARD_AND_MOUSE;
 }
 
-static void doMouseWheel(const SDL_MouseWheelEvent* event) {
-
-}
-
+//handles gameplay input
+//filters joystick input through deadzones
 static void doGameplayInput(void) {
-	//initialize all controls in unpressed/neutral positions
+	//initialize some in unpressed/neutral positions
+	//button controls aren't initialized like this because their decrementing buffers naturally reset them
 	input.leftLR = 0;
 	input.leftUD = 0;
 	input.rightLR = 0;
 	input.rightUD = 0;
-	input.fire = false;
-	input.dash = false;
-	input.pause = false;
 
 	//directional input
 	if (input.gamepad != NULL && (abs(input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTX]) > input.deadzone || abs(input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTY]) > input.deadzone)) {
 		//analog stick input
 		input.leftLR = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTX];
 		input.leftUD = input.gamepadAxes[SDL_CONTROLLER_AXIS_LEFTY];
+
+		//this goes here instead of in an input function, because the deadzones are checked here
+		input.lastControllerType = LCT_GAMEPAD;
 	}
 	else {
 		//do keyboard/d-pad input if there's no controller plugged in or if there's no analog stick input
 		
 		//find direction
 		if (input.lastControllerType == LCT_KEYBOARD_AND_MOUSE) {
-			input.leftLR = (input.keyboard[SDL_SCANCODE_D] - input.keyboard[SDL_SCANCODE_A]);
-			input.leftUD = (input.keyboard[SDL_SCANCODE_S] - input.keyboard[SDL_SCANCODE_W]);
+			//check for held flags; balance input automatically
+			input.leftLR = ((input.keyboard[SDL_SCANCODE_D] & IS_HELD) - (input.keyboard[SDL_SCANCODE_A] & IS_HELD));
+			input.leftUD = ((input.keyboard[SDL_SCANCODE_S] & IS_HELD) - (input.keyboard[SDL_SCANCODE_W] & IS_HELD));
 		}
 		else {
-			input.leftLR = (input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] - input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_LEFT]);
-			input.leftUD = (input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_DOWN] - input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_UP]);
+			//check for held flags; balance input automatically
+			input.leftLR = ((input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_RIGHT] & IS_HELD) - (input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_LEFT] & IS_HELD));
+			input.leftUD = ((input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_DOWN] & IS_HELD) - (input.gamepadButtons[SDL_CONTROLLER_BUTTON_DPAD_UP] & IS_HELD));
 		}
 
 		//for compatability with the analog sticks, direction along an axis will be either 0, gamepad_AXIS_MAX, or gamepad_AXIS_MIN
@@ -180,6 +218,9 @@ static void doGameplayInput(void) {
 		//analog stick input
 		input.rightLR = input.gamepadAxes[SDL_CONTROLLER_AXIS_RIGHTX];
 		input.rightUD = input.gamepadAxes[SDL_CONTROLLER_AXIS_RIGHTY];
+
+		//this goes here instead of in an input function, because the deadzones are checked here
+		input.lastControllerType = LCT_GAMEPAD;
 	}
 
 	//normalize directions
@@ -196,25 +237,55 @@ static void doGameplayInput(void) {
 
 	//buttons
 
+	//decrement buffers
+	--input.fire;
+	--input.firePressed;
+	--input.dash;
+	--input.dashPressed;
+	--input.pause;
+	--input.pausePressed;
+
 	//left click or r1 to fire/confirm
-	if (input.mouse.buttons[SDL_BUTTON_LEFT] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER]) {
-		input.fire = true;
-	}
+	if ((input.mouse.buttons[SDL_BUTTON_LEFT] & IS_HELD) || (input.gamepadButtons[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] & IS_HELD))
+		input.fire = INPUT_BUFFER_MAX;
+	if ((input.mouse.buttons[SDL_BUTTON_LEFT] & IS_PRESSED) || (input.gamepadButtons[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] & IS_PRESSED))
+		input.firePressed = INPUT_BUFFER_MAX;
 
 	//right click or circle to go back
-	if (input.mouse.buttons[SDL_BUTTON_RIGHT] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_B]) {
-		input.dash = true;
-	}
+	if ((input.mouse.buttons[SDL_BUTTON_RIGHT] & IS_HELD) || (input.gamepadButtons[SDL_CONTROLLER_BUTTON_B] & IS_HELD))
+		input.dash = INPUT_BUFFER_MAX;
+	if ((input.mouse.buttons[SDL_BUTTON_RIGHT] & IS_PRESSED) || (input.gamepadButtons[SDL_CONTROLLER_BUTTON_B] & IS_PRESSED))
+		input.dashPressed = INPUT_BUFFER_MAX;
 
 	//esc or options to pause
-	if (input.keyboard[SDL_SCANCODE_ESCAPE] || input.gamepadButtons[SDL_CONTROLLER_BUTTON_START]) {
-		input.pause = true;
-	}
+	if ((input.keyboard[SDL_SCANCODE_ESCAPE] & IS_HELD) || (input.gamepadButtons[SDL_CONTROLLER_BUTTON_START] & IS_HELD))
+		input.pause = INPUT_BUFFER_MAX;
+	if ((input.keyboard[SDL_SCANCODE_ESCAPE] & IS_PRESSED) || (input.gamepadButtons[SDL_CONTROLLER_BUTTON_START] & IS_PRESSED))
+		input.pausePressed = INPUT_BUFFER_MAX;
 }
 
-void handleInput(void)
-{
+void handleInput(void) {
 	SDL_Event event;
+
+	//go through and set IS_PRESSED and IS_RELEASED flags to 0
+	for (int i = 0; i < MAX_KEYBOARD_KEYS; ++i) {
+		if (input.keyboard[i] & IS_PRESSED)
+			input.keyboard[i] &= ~IS_PRESSED;
+		if (input.keyboard[i] & IS_RELEASED)
+			input.keyboard[i] &= ~IS_RELEASED;
+	}
+	for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
+		if (input.gamepadButtons[i] & IS_PRESSED)
+			input.gamepadButtons[i] &= ~IS_PRESSED;
+		if (input.gamepadButtons[i] & IS_RELEASED)
+			input.gamepadButtons[i] &= ~IS_RELEASED;
+	}
+	for (int i = 0; i < MAX_MOUSE_BUTTONS; ++i) {
+		if (input.mouse.buttons[i] & IS_PRESSED)
+			input.mouse.buttons[i] &= ~IS_PRESSED;
+		if (input.mouse.buttons[i] & IS_RELEASED)
+			input.mouse.buttons[i] &= ~IS_RELEASED;
+	}
 
 	//handle most events
 	while (SDL_PollEvent(&event))

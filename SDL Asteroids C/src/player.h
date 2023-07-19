@@ -7,6 +7,7 @@
 */
 
 #include "bullets.h"
+#include "colliders.h"
 #include "draw.h"
 #include "geometry.h"
 
@@ -25,9 +26,12 @@ typedef struct {
 	Vector2 dirVector;	//stores player direction (should always be normalized)
 	int dashTimer;	//stores how much longer a dash will go on for
 	int reload;		//when it's below zero, the player can fire again
+	int hp;			//hit points
+	int iFrames;	//invincibility frames
 	WeaponType weaponType;	//what type of weapon the player has right now
-	Sprite* shipSprite;
+	SpriteStatic* shipSprite;
 	SpriteAnimated* shipFlame;
+	OBBCollider* collider;
 } Player;
 
 void updatePlayer();

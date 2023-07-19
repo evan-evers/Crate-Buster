@@ -6,6 +6,18 @@
 
 extern App app;
 
+void prepareScene(void);
+void presentScene(void);
+SDL_Texture* loadTexture(char* filename);
+void blitSprite(const SpriteStatic* sprite, int x, int y, SpriteCenter center);
+void blitSpriteEX(const SpriteStatic* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
+void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCenter center);
+void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
+SpriteAtlas* initSpriteAtlas(char* filename);
+SpriteStatic* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h);
+SpriteAnimated* initSpriteAnimated(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h, int frames, float currentFrame, float spd, AnimationLoop loopBehavior);
+void deleteSpriteAtlas(SpriteAtlas* atlas);
+
 //Gets the scene ready for drawing
 void prepareScene(void) {
 	SDL_SetRenderDrawColor(app.renderer, 0x0, 0x0, 0x0, 0xff);
@@ -30,7 +42,7 @@ SDL_Texture* loadTexture(char* filename) {
 }
 
 //Blit a sprite to the screen at the specified coordinates.
-void blitSprite(const Sprite* sprite, int x, int y, SpriteCenter center) {
+void blitSprite(const SpriteStatic* sprite, int x, int y, SpriteCenter center) {
 	SDL_Rect src;
 
 	src.x = sprite->srcX;
@@ -88,7 +100,7 @@ void blitSprite(const Sprite* sprite, int x, int y, SpriteCenter center) {
 
 //Blit a sprite to the screen at the specified coordinates, with rotation around an origin, flipping and alpha modulation.
 //Pass NULL into the origin to rotate around the center of the destination rectangle.
-void blitSpriteEX(const Sprite* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha) {
+void blitSpriteEX(const SpriteStatic* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha) {
 	SDL_Rect src;
 
 	src.x = sprite->srcX;
@@ -343,6 +355,7 @@ void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteC
 //loads the atlas's texture and initializes its members
 SpriteAtlas* initSpriteAtlas(char* filename) {
 	SpriteAtlas *atlas = malloc(sizeof(SpriteAtlas));
+	memset(atlas, 0, sizeof(SpriteAtlas));
 	atlas->texture = loadTexture(filename);
 
 	if (atlas->texture == NULL) {
@@ -357,8 +370,9 @@ SpriteAtlas* initSpriteAtlas(char* filename) {
 }
 
 //initializes struct's members
-Sprite* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h) {
-	Sprite* sprite = malloc(sizeof(Sprite));
+SpriteStatic* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h) {
+	SpriteStatic* sprite = malloc(sizeof(SpriteStatic));
+	memset(sprite, 0, sizeof(SpriteStatic));
 	sprite->atlas = atlas;
 	//convert these bits into pixels now for quicker calculations later
 	sprite->srcX = srcX * SPRITE_ATLAS_CELL_W;
@@ -373,6 +387,7 @@ Sprite* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h) {
 //current frame should be set to 0 unless you want to start the animation after its beginning
 SpriteAnimated* initSpriteAnimated(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h, int frames, float currentFrame, float spd, AnimationLoop loopBehavior) {
 	SpriteAnimated* sprite = malloc(sizeof(SpriteAnimated));
+	memset(sprite, 0, sizeof(SpriteAnimated));
 	sprite->atlas = atlas;
 	//convert these bits into pixels now for quicker calculations later
 	sprite->srcX = srcX * SPRITE_ATLAS_CELL_W;

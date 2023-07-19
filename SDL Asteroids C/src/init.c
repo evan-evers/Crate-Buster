@@ -9,6 +9,10 @@
 extern App app;
 extern InputManager input;
 
+bool initSDL(void);
+bool initGame(void);
+void close(void);
+
 //Initializes SDL and its subsystems. Returns true on successful init and false on unsuccessful init.
 bool initSDL(void) {
 	bool success = true;
