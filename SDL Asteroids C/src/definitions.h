@@ -26,6 +26,19 @@
 
 #define FPS 60
 
+//how far off of the screen to go before screenwrapping (in sprite width/height)
+//0.75 is just an approximation of the square root of 2 (1.414 something) divided by 2
+#define SCREENWRAP_MARGIN (float)0.75
+//time when hitflash and powerup collection flash no longer get drawn
+#define END_OF_FLASH 15
+#define PLAYER_I_FRAMES_MAX 60
+#define MAX_ENEMIES 10	//largest number of enemies that can be in the game at once
+#define BULLET_OFFSET_PLAYER 20	//offset from the center of the player when a player bullet is created
+#define BULLET_OFFSET_ENEMY 25	//offset from the center of an enemy when an enemy bullet is created
+#define NUM_BACKGROUND_STARS_L1 25
+#define NUM_BACKGROUND_STARS_L2 25
+#define NUM_BACKGROUND_STARS_L3 25
+
 #define MAX_KEYBOARD_KEYS 150
 #define GAMEPAD_AXIS_MAX 32767
 #define GAMEPAD_AXIS_MIN -32768

@@ -2,22 +2,29 @@
 
 #include "player.h"
 
+#include "background.h"
 #include "bullets.h"
 #include "colliders.h"
 #include "crates.h"
+#include "draw.h"
 #include "geometry.h"
+#include "particles.h"
 #include "stage.h"
 
 extern App app;
 extern InputManager input;
 extern Player *player;
 extern Stage stage;
+extern Background background;
 
 static void psNormal();
 static void psDashing();
 void updatePlayer();
 static void checkHitCrates(void);
+static void checkHitEnemies(void);
 void drawPlayer();
+static void mfUpdate(Particle *particle);
+static void mfDraw(Particle *particle);
 void initPlayer(int x, int y);
 void deletePlayer();
 
@@ -27,10 +34,20 @@ static const float DASH_SPEED_DECAY = 0.30;	//speed decay per frame in dash stat
 static const float DASH_SPEED_MAX = 10;	//maximum speed at start of dash state
 static const float ACCEL = 0.25;	//acceleration
 static const float DECCEL = 0.125;	//decelleration
-static const float I_FRAMES_MAX = 60;	//number of invincibility frames after getting hit
 static const int DEATH_TIMER_MAX = 120;	//time until respawning
+const int PLAYER_HP_MAX = 3;	//not static, as this is referred to by powerups.h
+static float horzEdgeDist = 48 * SCREENWRAP_MARGIN;	//screenwrap margins
+static float vertEdgeDist = 48 * SCREENWRAP_MARGIN;
 
 static int deathTimer = 0;	//keeps track of time until respawn
+//muzzle flash particles
+static Particle *mfNormal = NULL;
+static Particle *mfErratic = NULL;
+static Particle *mfBouncer = NULL;
+static Particle *mfShotgun = NULL;
+//powerup flash vars
+static SpriteStatic *powerupFlash = NULL;
+int timeSincePowerupCollected = END_OF_FLASH;
 
 //normal player state
 static void psNormal() {
@@ -66,25 +83,28 @@ static void psNormal() {
 		player->speed = MAX(0, player->speed - DECCEL);
 	}
 
-	//update player movement
+	//update position
 	player->x += player->dirVector.x * player->speed;
 	player->y += player->dirVector.y * player->speed;
 
-	//clamp player to edges of screen
-	if (player->x < 0)
-		player->x = 0;
-	if (player->x > SCREEN_WIDTH)
-		player->x = SCREEN_WIDTH;
-	if (player->y < 0)
-		player->y = 0;
-	if (player->y > SCREEN_HEIGHT)
-		player->y = SCREEN_HEIGHT;
+	//screenwrap
+	if (player->x < -horzEdgeDist)
+		player->x = SCREEN_WIDTH + horzEdgeDist;
+	if (player->x > SCREEN_WIDTH + horzEdgeDist)
+		player->x = -horzEdgeDist;
+	if (player->y < -vertEdgeDist)
+		player->y = SCREEN_HEIGHT + vertEdgeDist;
+	if (player->y > SCREEN_HEIGHT + vertEdgeDist)
+		player->y = -vertEdgeDist;
 
 	//update collider
 	updateCollider(player->collider, player->x, player->y, player->angle * DEGREES_TO_RADIANS, -1, -1);
 
 	//check if the player's hitbox intersected with any crates; if so, decrement player and box hp
 	checkHitCrates();
+
+	//check if player touches an enemy
+	checkHitEnemies();
 
 	//decrement invincibility frames
 	--player->iFrames;
@@ -93,20 +113,24 @@ static void psNormal() {
 	if (--player->reload <= 0 && input.fire > 0) {
 		firePlayerBullet();
 
-		//reset buffer (to prevent firing after button was released)
-		input.fire = 0;
-	}
-
-	//just for fun for now: weapon switching
-	if (input.pausePressed > 0) {
-		++player->weaponType;
-
-		if (player->weaponType >= WT_ENEMY) {
-			player->weaponType = WT_NORMAL;
+		//set muzzle flash animation to play
+		switch (player->weaponType) {
+			case(WT_NORMAL):
+				mfNormal->sprite->currentFrame = 0;
+				break;
+			case(WT_ERRATIC):
+				mfErratic->sprite->currentFrame = 0;
+				break;
+			case(WT_BOUNCER):
+				mfBouncer->sprite->currentFrame = 0;
+				break;
+			case(WT_SHOTGUN):
+				mfShotgun->sprite->currentFrame = 0;
+				break;
 		}
 
-		//reset buffer
-		input.pausePressed = 0;
+		//reset buffer (to prevent firing after button was released)
+		input.fire = 0;
 	}
 
 	//state changes
@@ -127,6 +151,9 @@ static void psNormal() {
 
 	//kill player when HP is 0
 	if (player->hp <= 0) {
+		//death explosion
+		initParticle(initSpriteAnimated(app.gameplaySprites, 0, 18, 4, 4, SC_CENTER, 5, 0, 0.3, AL_ONESHOT), player->x, player->y, 0, 0, (float)(rand() % 4) * 90, 1, NULL, explosionDraw);
+
 		deathTimer = DEATH_TIMER_MAX;
 		player->state = PS_DESTROYED;
 	}
@@ -154,21 +181,24 @@ static void psDashing() {
 	player->x += player->dirVector.x * player->speed;
 	player->y += player->dirVector.y * player->speed;
 
-	//clamp player to edges of screen
-	if (player->x < 0)
-		player->x = 0;
-	if (player->x > SCREEN_WIDTH)
-		player->x = SCREEN_WIDTH;
-	if (player->y < 0)
-		player->y = 0;
-	if (player->y > SCREEN_HEIGHT)
-		player->y = SCREEN_HEIGHT;
+	//screenwrap
+	if (player->x < -horzEdgeDist)
+		player->x = SCREEN_WIDTH + horzEdgeDist;
+	if (player->x > SCREEN_WIDTH + horzEdgeDist)
+		player->x = -horzEdgeDist;
+	if (player->y < -vertEdgeDist)
+		player->y = SCREEN_HEIGHT + vertEdgeDist;
+	if (player->y > SCREEN_HEIGHT + vertEdgeDist)
+		player->y = -vertEdgeDist;
 
 	//update collider
 	updateCollider(player->collider, player->x, player->y, player->angle, -1, -1);
 
 	//check if the player's hitbox intersected with any crates; if so, decrement player and box hp
 	checkHitCrates();
+
+	//check if player touches an enemy
+	checkHitEnemies();
 
 	//decrement invincibility frames
 	--player->iFrames;
@@ -203,7 +233,7 @@ static void psDestroyed() {
 		player->dashTimer = 0;
 		player->reload = 0;
 		player->hp = 3;	//3 hits before dying
-		player->iFrames = I_FRAMES_MAX;	//give the player respawn invulnerability in case they spawn on top of some crates
+		player->iFrames = PLAYER_I_FRAMES_MAX;	//give the player respawn invulnerability in case they spawn on top of some crates
 		player->weaponType = WT_NORMAL;
 
 		player->state = PS_NORMAL;
@@ -226,20 +256,23 @@ void updatePlayer() {
 			psNormal(player);
 	}
 
-	printf("HP: %d, iFrames: %d\n", player->hp, player->iFrames);
+	//progress powerup flash
+	++timeSincePowerupCollected;
 }
 
+//check if the player's hit a crate; hurt player and destroy crate if so.
 static void checkHitCrates(void) {
 	Crate *crate = stage.crateHead;
-	bool alreadyHit = false;
 
 	while (crate != NULL) {
-		if (checkCollision(player->collider, crate->collider)) {
+		if (checkIntersection(player->collider, crate->collider)) {
 			//decrement player HP, but only for the first crate they touch
-			if (!alreadyHit && player->iFrames <= 0) {
-				player->iFrames = I_FRAMES_MAX;	//give i-frames
+			if (player->iFrames <= 0) {
+				player->iFrames = PLAYER_I_FRAMES_MAX;	//give i-frames
 				--player->hp;
-				alreadyHit = true;
+
+				//set background to do hurt flash
+				background.backgroundFlashRedTimer = 0;
 			}
 			crate->hp = 0;	//destroy crate
 		}
@@ -248,29 +281,75 @@ static void checkHitCrates(void) {
 	}
 }
 
+//check if the player's hit an enemy; hurt player and destroy enemy if so.
+static void checkHitEnemies(void) {
+	Enemy *enemy = stage.enemyHead;
+
+	while (enemy != NULL) {
+		if (checkIntersection(player->collider, enemy->collider)) {
+			//decrement player HP, but only for the first enemy they touch
+			if (player->iFrames <= 0) {
+				player->iFrames = PLAYER_I_FRAMES_MAX;	//give i-frames
+				--player->hp;
+
+				//set background to do hurt flash
+				background.backgroundFlashRedTimer = 0;
+			}
+			enemy->hp = 0;	//destroy enemy
+		}
+
+		enemy = enemy->next;
+	}
+}
+
 //draw player
 void drawPlayer() {
 	//only draw if player's not dead
 	if (player->state != PS_DESTROYED) {
-		//blinking when i-frames are active
 		if (player->iFrames <= 0 || player->iFrames % 10 > 5) {
+			//draw as normal
 			//draw sprite at center of player
-			blitSpriteEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, SC_TOP_LEFT, player->angle, NULL, SDL_FLIP_NONE, 255);
+			blitSpriteStaticEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, player->angle, NULL, SDL_FLIP_NONE, 255);
 			//flame's just magic-numbered into place
 			//flame's rotation origin is the center of the ship
 			blitAndUpdateSpriteAnimatedEX(player->shipFlame, player->x - player->shipSprite->w * 0.5 - player->shipFlame->w, player->y - player->shipFlame->h * 0.5,
-				SC_TOP_LEFT, player->angle, &(SDL_Point){(player->shipSprite->w) * 0.5 + player->shipFlame->w, player->shipFlame->h * 0.5}, SDL_FLIP_NONE, 255);
+			 player->angle, &(SDL_Point){(player->shipSprite->w) * 0.5 + player->shipFlame->w, player->shipFlame->h * 0.5}, SDL_FLIP_NONE, 255);
 		}
 		else {
+			//blinking when i-frames are active
 			//draw player with half-transparency
-			blitSpriteEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, SC_TOP_LEFT, player->angle, NULL, SDL_FLIP_NONE, 127);
+			setTextureRGBA(player->shipSprite->atlas->texture, 255, 255, 255, 127);		//since both of the player's sprite share the same atlas, i'm only calling this once
+			blitSpriteStaticEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, player->angle, NULL, SDL_FLIP_NONE);
 			blitAndUpdateSpriteAnimatedEX(player->shipFlame, player->x - player->shipSprite->w * 0.5 - player->shipFlame->w, player->y - player->shipFlame->h * 0.5,
-				SC_TOP_LEFT, player->angle, &(SDL_Point){(player->shipSprite->w) * 0.5 + player->shipFlame->w, player->shipFlame->h * 0.5}, SDL_FLIP_NONE, 127);
+			 player->angle, &(SDL_Point){(player->shipSprite->w) * 0.5 + player->shipFlame->w, player->shipFlame->h * 0.5}, SDL_FLIP_NONE);
+			setTextureRGBA(player->shipSprite->atlas->texture, 255, 255, 255, 255);	
 		}
+
+		//powerup flash
+		setTextureRGBA(app.gameplaySprites->texture, 255, 255, 255, MAX((int)(255 * (float)(END_OF_FLASH - timeSincePowerupCollected) / (float)END_OF_FLASH), 0));
+		blitSpriteStaticEX(powerupFlash, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, player->angle, NULL, SDL_FLIP_NONE);
+		setTextureRGBA(app.gameplaySprites->texture, 255, 255, 255, 255);
 	}
 
 	//only happens if app.debug = true
 	displayCollider(app.renderer, &COLOR_RED, player->collider);
+}
+
+//muzzle flash particle update function
+static void mfUpdate(Particle *particle) {
+	//only bother with expensive trig functions if the particle is visible
+	if (particle->sprite->currentFrame != particle->sprite->frames - 1) {
+		particle->x = player->x + cos(player->angle * DEGREES_TO_RADIANS) * (BULLET_OFFSET_PLAYER + 4);
+		particle->y = player->y + sin(player->angle * DEGREES_TO_RADIANS) * (BULLET_OFFSET_PLAYER + 4);
+	}
+}
+
+//muzzle flash particle draw function
+static void mfDraw(Particle *particle) {
+	//don't call if particle not visible
+	if (particle->sprite->currentFrame != particle->sprite->frames - 1) {
+		blitAndUpdateSpriteAnimatedEX(particle->sprite, particle->x, particle->y, player->angle, NULL, SDL_FLIP_NONE);
+	}
 }
 
 //initialize player at pos (x,y)
@@ -286,18 +365,34 @@ void initPlayer(int x, int y) {
 	player->dirVector.y = 0;
 	player->dashTimer = 0;
 	player->reload = 0;
-	player->hp = 3;	//3 hits before dying
+	player->hp = PLAYER_HP_MAX;	//3 hits before dying
 	player->iFrames = 0;
 	player->weaponType = WT_NORMAL;
-	player->shipSprite = initSprite(app.gameplaySprites, 0, 11, 3, 3);
-	player->shipFlame = initSpriteAnimated(app.gameplaySprites, 16, 15, 1, 1, 4, 0, 0.25, AL_LOOP);
+	player->shipSprite = initSpriteStatic(app.gameplaySprites, 0, 11, 3, 3, SC_TOP_LEFT);
+	player->shipFlame = initSpriteAnimated(app.gameplaySprites, 16, 16, 1, 1, SC_TOP_LEFT, 4, 0, 0.25, AL_LOOP);
 	player->collider = initOBBCollider(player->shipSprite->w * 0.2, player->shipSprite->h * 0.2, (Vector2){ player->x, player->y }, player->angle);
+
+	//initialize muzzle flash particles
+	//particles initialized with an extra frame of animation to allow user to check when they've ended
+	mfNormal = initParticle(initSpriteAnimated(app.gameplaySprites, 16, 2, 1, 1, SC_CENTER, 5, 5, 0.5, AL_ONESHOT), 0, 0, 0, 0, 0, 1, mfUpdate, mfDraw);
+	mfErratic = initParticle(initSpriteAnimated(app.gameplaySprites, 16, 5, 1, 1, SC_CENTER, 5, 5, 0.5, AL_ONESHOT), 0, 0, 0, 0, 0, 1, mfUpdate, mfDraw);
+	mfBouncer = initParticle(initSpriteAnimated(app.gameplaySprites, 16, 8, 1, 1, SC_CENTER, 5, 5, 0.5, AL_ONESHOT), 0, 0, 0, 0, 0, 1, mfUpdate, mfDraw);
+	mfShotgun = initParticle(initSpriteAnimated(app.gameplaySprites, 16, 11, 1, 1, SC_CENTER, 5, 5, 0.5, AL_ONESHOT), 0, 0, 0, 0, 0, 1, mfUpdate, mfDraw);
+
+	//initialize powerup flash
+	powerupFlash = initSpriteStatic(app.gameplaySprites, 3, 11, 3, 3, SC_TOP_LEFT);
 }
 
 //destruct player
 void deletePlayer() {
+	//free player struct stuff
 	free(player->shipSprite);
 	free(player->shipFlame);
 	free(player->collider);
 	free(player);
+
+	//muzzle flash particles are automatically deallocated
+
+	//delete powerup flash
+	free(powerupFlash);
 }

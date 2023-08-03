@@ -7,7 +7,7 @@ extern App app; //to check if debug is on for drawing hitboxes
 OBBCollider* initOBBCollider(const float xHalfwidth, const float yHalfwidth, const Vector2 origin, const float angle);
 void updateCollider(OBBCollider* collider, const float x, const float y, const float angle, const float w, const float h);
 void displayCollider(SDL_Renderer* renderer, const SDL_Color* color, const OBBCollider* collider);
-bool checkCollision(const OBBCollider* a, const OBBCollider* b);
+bool checkIntersection(const OBBCollider* a, const OBBCollider* b);
 
 //controls how large the + sign is that represents the origin of an OBB during debug drawing
 static const int DEBUG_ORIGIN_DRAW_SIZE = 10;
@@ -92,11 +92,11 @@ void displayCollider(SDL_Renderer* renderer, const SDL_Color *color, const OBBCo
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 }
 
-//check collision between two OBB colliders
+//check intersection between two OBB colliders
 //first, check if the distance between the centers of the two boxes is less than the sum of the "radii" of the rectangles
 // (the radii being the diagonal distance from the center of the box to one of its corners)
 //if the distance is less than that, use seperating axes therorem to detect a collision
-bool checkCollision(const OBBCollider* a, const OBBCollider* b) {
+bool checkIntersection(const OBBCollider* a, const OBBCollider* b) {
     //radius-distance check for optimization
     //the "radius" is the distance from the center of a box to one of its corners
 
@@ -150,6 +150,8 @@ bool checkCollision(const OBBCollider* a, const OBBCollider* b) {
     //values for storing dot products of projection values of both boxes
     float   aCurrentProjection, aMaxProjection, aMinProjection,
         bCurrentProjection, bMaxProjection, bMinProjection;
+    //vector that holds projections
+    Vector2 projVec;
 
     //go through all four axes, checking for overlap
     //a's axes
@@ -162,7 +164,8 @@ bool checkCollision(const OBBCollider* a, const OBBCollider* b) {
         //the resulting value relates to the corner's position on the line
         //by comparing the maximums and minimums of those values for each box, we can determine intersection on an axis
         for (int j = 0; j < 4; j++) {
-            aCurrentProjection = dotProduct(&(a->axes[i]), projectVector(&aCorners[j], &(a->axes[i])));
+            projVec = projectVector(&aCorners[j], &(a->axes[i]));
+            aCurrentProjection = dotProduct(&(a->axes[i]), &projVec);
             //find max/min
             if (aCurrentProjection > aMaxProjection)
                 aMaxProjection = aCurrentProjection;
@@ -170,7 +173,8 @@ bool checkCollision(const OBBCollider* a, const OBBCollider* b) {
                 aMinProjection = aCurrentProjection;
         }
         for (int j = 0; j < 4; j++) {
-            bCurrentProjection = dotProduct(&(a->axes[i]), projectVector(&bCorners[j], &(a->axes[i])));
+            projVec = projectVector(&bCorners[j], &(a->axes[i]));
+            bCurrentProjection = dotProduct(&(a->axes[i]), &projVec);
             //find max/min
             if (bCurrentProjection > bMaxProjection)
                 bMaxProjection = bCurrentProjection;
@@ -195,7 +199,8 @@ bool checkCollision(const OBBCollider* a, const OBBCollider* b) {
         //the resulting value relates to the corner's position on the line
         //by comparing the maximums and minimums of those values for each box, we can determine intersection on an axis
         for (int j = 0; j < 4; j++) {
-            aCurrentProjection = dotProduct(&(b->axes[i]), projectVector(&aCorners[j], &(b->axes[i])));
+            projVec = projectVector(&aCorners[j], &(b->axes[i]));
+            aCurrentProjection = dotProduct(&(b->axes[i]), &projVec);
             //find max/min
             if (aCurrentProjection > aMaxProjection)
                 aMaxProjection = aCurrentProjection;
@@ -203,7 +208,8 @@ bool checkCollision(const OBBCollider* a, const OBBCollider* b) {
                 aMinProjection = aCurrentProjection;
         }
         for (int j = 0; j < 4; j++) {
-            bCurrentProjection = dotProduct(&(b->axes[i]), projectVector(&bCorners[j], &(b->axes[i])));
+            projVec = projectVector(&bCorners[j], &(b->axes[i]));
+            bCurrentProjection = dotProduct(&(b->axes[i]), &projVec);
             //find max/min
             if (bCurrentProjection > bMaxProjection)
                 bMaxProjection = bCurrentProjection;

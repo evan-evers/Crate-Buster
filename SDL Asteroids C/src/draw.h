@@ -32,6 +32,7 @@ typedef struct {
 	int srcY;	//topmost cell coordinate in cells
 	int w;		//width of one frame in cells
 	int h;		//height of one frame in cells
+	SpriteCenter center;	//determines where the center of the sprite is considered to be (a better name would probably be "origin")
 } SpriteStatic;
 
 //Specifies animation loop behavior.
@@ -50,6 +51,7 @@ typedef struct {
 	int srcY;	//topmost cell coordinate in cells
 	int w;		//width of one frame in cells
 	int h;		//height of one frame in cells
+	SpriteCenter center;	//determines where the center of the sprite is considered to be (a better name would probably be "origin")
 
 	//anim vars
 	int frames;			//number of frames in the animation
@@ -61,15 +63,16 @@ typedef struct {
 void prepareScene(void);
 void presentScene(void);
 SDL_Texture* loadTexture(char* filename);
-void blitSprite(const SpriteStatic* sprite, int x, int y, SpriteCenter center);
-void blitSpriteEX(const SpriteStatic* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
-void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y, SpriteCenter center);
-void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, SpriteCenter center, float angle, const SDL_Point* origin, SDL_RendererFlip flip, Uint8 alpha);
+void setTextureRGBA(SDL_Texture *texture, int r, int g, int b, int a);
+void blitSpriteStatic(const SpriteStatic *sprite, int x, int y);
+void blitSpriteStaticEX(const SpriteStatic *sprite, int x, int y, float angle, const SDL_Point *origin, SDL_RendererFlip flip);
+void blitAndUpdateSpriteAnimated(SpriteAnimated* sprite, int x, int y);
+void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, float angle, const SDL_Point* origin, SDL_RendererFlip flip);
 
 //initializers (all use dynamic allocation, make sure to free())
 SpriteAtlas* initSpriteAtlas(char* filename);
-SpriteStatic* initSprite(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h);
-SpriteAnimated* initSpriteAnimated(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h, int frames, float currentFrame, float spd, AnimationLoop loopBehavior);
+SpriteStatic *initSpriteStatic(const SpriteAtlas *atlas, int srcX, int srcY, int w, int h, SpriteCenter center);
+SpriteAnimated *initSpriteAnimated(const SpriteAtlas *atlas, int srcX, int srcY, int w, int h, SpriteCenter center, int frames, float currentFrame, float spd, AnimationLoop loopBehavior);
 
 //destructor for spriteAtlas (call free() on other structs)
 void deleteSpriteAtlas(SpriteAtlas* atlas);

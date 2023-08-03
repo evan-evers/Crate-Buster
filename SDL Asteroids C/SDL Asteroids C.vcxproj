@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\background.h" />
     <ClInclude Include="src\bullets.h" />
     <ClInclude Include="src\colliders.h" />
     <ClInclude Include="src\colors.h" />
@@ -26,26 +27,35 @@
     <ClInclude Include="src\crates.h" />
     <ClInclude Include="src\definitions.h" />
     <ClInclude Include="src\draw.h" />
+    <ClInclude Include="src\enemies.h" />
     <ClInclude Include="src\geometry.h" />
     <ClInclude Include="src\init.h" />
     <ClInclude Include="src\input.h" />
+    <ClInclude Include="src\particles.h" />
     <ClInclude Include="src\player.h" />
+    <ClInclude Include="src\powerups.h" />
     <ClInclude Include="src\random.h" />
+    <ClInclude Include="src\scrap.h" />
     <ClInclude Include="src\stage.h" />
     <ClInclude Include="src\structs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\background.c" />
     <ClCompile Include="src\bullet.c" />
     <ClCompile Include="src\colliders.c" />
     <ClCompile Include="src\colors.c" />
     <ClCompile Include="src\crates.c" />
     <ClCompile Include="src\draw.c" />
+    <ClCompile Include="src\enemies.c" />
     <ClCompile Include="src\geometry.c" />
     <ClCompile Include="src\init.c" />
     <ClCompile Include="src\input.c" />
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\particles.c" />
     <ClCompile Include="src\player.c" />
+    <ClCompile Include="src\powerups.c" />
     <ClCompile Include="src\random.c" />
+    <ClCompile Include="src\scrap.c" />
     <ClCompile Include="src\stage.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

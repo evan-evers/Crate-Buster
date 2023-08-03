@@ -20,10 +20,11 @@ typedef struct {
 Vector2 addVec2(Vector2 a, Vector2 b);
 Vector2 multVec2(Vector2 a, Vector2 b);
 Vector2 scalarMultVec2(Vector2 a, float b);
-struct SDL_Point vec2ToSDL_Point(const Vector2 vect);
-void normalize(Vector2* vector);
+struct SDL_Point vec2ToSDL_Point(const Vector2 vec);
+void rotateVector(Vector2 *vec, float *angle, Vector2 origin);
+void normalize(Vector2* vec);
 float dotProduct(const Vector2* a, const Vector2* b);
 float distanceSquared(float x1, float y1, float x2, float y2);
-Vector2* projectVector(const Vector2* vProj, const Vector2* vOnto);
+Vector2 projectVector(const Vector2* vProj, const Vector2* vOnto);
 
 #endif

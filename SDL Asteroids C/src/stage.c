@@ -1,6 +1,8 @@
 #include "common.h"
 
+#include "background.h"
 #include "player.h"
+#include "powerups.h"
 #include "stage.h"
 
 extern App app;
@@ -24,32 +26,62 @@ void initStage(void) {
 	//initialize stage lists
 	stage.bulletHead = stage.bulletTail = NULL;
 	stage.crateHead = stage.crateTail = NULL;
+	stage.enemyHead = stage.enemyTail = NULL;
+	stage.particleHead = stage.particleTail = NULL;
+
+	//initialize objects that must exist at start of level
+	initBackground();
 
 	initPlayer(SCREEN_WIDTH * 0.5, SCREEN_HEIGHT * 0.5);
 
 	initCrates(8);
+
+	initPowerups();
 }
 
 static void logic(void) {
 	updatePlayer();
 
+	updateParticles();
+
 	updateCrates();
 
 	updateBullets();
+
+	updateEnemies();
+
+	spawnEnemies();
+
+	//increment timer
+	++stage.timer;
 }
 
 static void draw(void) {
-	drawBullets();
+	drawBackground();
+
+	drawParticles();
 
 	drawCrates();
+
+	drawEnemies();
+
+	drawBullets();
 
 	drawPlayer();
 }
 
 void deleteStage(void) {
+	deleteBackground();
+
+	deleteParticles();
+
 	deleteCrates();
 
 	deleteBullets();
 
 	deletePlayer();
+
+	deleteEnemies();
+
+	deletePowerups();
 }

@@ -55,6 +55,9 @@ static void handleWindowResize(const SDL_WindowEvent* event) {
 		app.windowPixelRatioW = (double)SCREEN_WIDTH / (double)(event->data1 - app.windowPaddingW);
 		app.windowPixelRatioH = (double)SCREEN_HEIGHT / (double)(event->data2 - app.windowPaddingH);
 	}
+	
+	//input can get "stuck" when resizing window if an input was held down during resize, so reset input
+	resetInput();
 }
 
 //keyboard control handling

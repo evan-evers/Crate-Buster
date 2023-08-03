@@ -6,6 +6,7 @@
 */
 
 #include "colliders.h"
+#include "enemies.h"
 #include "geometry.h"
 
 //describes the types of weapons the player can fire
@@ -27,12 +28,13 @@ struct Bullet {
 	Vector2 dirVector;	//stores bullet direction (should always be normalized)
 	int ttl;		//time to live
 	WeaponType type;		//the type of weapon this bullet was fired from (aka the type of bullet this is)
-	SpriteAnimated* sprite;
-	OBBCollider* collider;
-	Bullet* next;
+	SpriteAnimated *sprite;
+	OBBCollider *collider;
+	Bullet *next;
 };
 
 void firePlayerBullet(void);
+void fireEnemyBullet(Enemy *enemy);
 void updateBullets(void);
 void drawBullets(void);
 void deleteBullets(void);

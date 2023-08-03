@@ -21,6 +21,6 @@ typedef struct {
 OBBCollider* initOBBCollider(const float xHalfwidth, const float yHalfwidth, const Vector2 origin, const float angle);
 void updateCollider(OBBCollider* collider, const float x, const float y, const float angle, const float w, const float h);
 void displayCollider(SDL_Renderer* renderer, const SDL_Color* color, const OBBCollider* collider);
-bool checkCollision(const OBBCollider *a, const OBBCollider *b);
+bool checkIntersection(const OBBCollider *a, const OBBCollider *b);
 
 #endif

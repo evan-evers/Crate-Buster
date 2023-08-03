@@ -52,7 +52,7 @@ bool initSDL(void) {
 		}
 
 		//start fullscreen
-		//SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+		SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 
 	//initialize SDL image
