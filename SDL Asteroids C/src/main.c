@@ -5,11 +5,14 @@
 #include "common.h"
 
 #include "background.h"
+#include "cursor.h"
 #include "draw.h"
 #include "init.h"
 #include "input.h"
+#include "mainMenu.h"
 #include "player.h"
 #include "stage.h"
+#include "widgets.h"
 
 App app;
 Background background;
@@ -38,9 +41,14 @@ int main(int argc, char* argv[]) {
 		return 1;	//return with error code
 	}
 
+	//prevent something instantly happening because the user pressed something while the game was first loading
 	resetInput();
 
-	initStage();
+	//since main menu and gameplay use the same background, init it here
+	initBackground();
+
+	//start game on main menu
+	initMainMenu();
 
 	while (!app.quit) {
 		handleInput();
@@ -51,12 +59,14 @@ int main(int argc, char* argv[]) {
 
 		app.delegate.draw();
 
+		drawCursor();	//cursor will be drawn over everything else in the scene
+
 		presentScene();
 	}
 
 	//clean up
-	deleteStage();
-	
+	deleteBackground();
+
 	close();
 
 	return 0;

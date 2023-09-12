@@ -9,6 +9,7 @@
 #include "player.h"
 #include "powerups.h"
 #include "scrap.h"
+#include "sound.h"
 #include "stage.h"
 
 extern App app;
@@ -25,7 +26,8 @@ void deleteEnemies(void);
 static const int ENEMY_HEALTH_MAX = 125;
 static const int SPAWN_DISTANCE = 200;	//distance away from the edges of the screen where an enemy can spawn
 
-static int enemySpawnTimer = FPS * 15;	//wait 15 seconds before spawning any enemies
+//referred to by stage.c
+int enemySpawnTimer = 0;	//wait 15 seconds before spawning any enemies
 
 //muzzle flash update is handled in update function
 
@@ -131,6 +133,8 @@ static void esNormal(Enemy *enemy) {
 		
 		//muzzle flash
 		enemy->muzzleFlash->sprite->currentFrame = 0;
+
+		playSound(SFX_SHOT_FIRE_5, SC_ENEMY_FIRE, false, enemy->x / SCREEN_WIDTH * 255);
 	}
 }
 
@@ -164,6 +168,7 @@ void updateEnemies(void) {
 		if (enemy->hp <= 0) {
 			//death explosion
 			initParticle(initSpriteAnimated(app.gameplaySprites, 0, 18, 4, 4, SC_CENTER, 5, 0, 0.3, AL_ONESHOT), enemy->x, enemy->y, 0, 0, (float)(rand() % 4) * 90, 1, NULL, explosionDraw);
+			playSound(SFX_ENEMY_KILL, SC_ENEMY, false, enemy->x / SCREEN_WIDTH * 255);
 
 			//add 10 scrap pieces to stage
 			for (int i = 0; i < 10; ++i)
@@ -205,7 +210,7 @@ void spawnEnemies(void) {
 		initEnemy();
 
 		//the longer the player's been in the level, the faster enemies should spawn in (to an extent)
-		enemySpawnTimer = MAX(FPS * 10 - (float)stage.timer * 0.05, FPS * 3);
+		enemySpawnTimer = MAX(FPS * 20 - (float)stage.timer * 0.05 - (stage.level - 1) * FPS, FPS * 10);
 	}
 }
 

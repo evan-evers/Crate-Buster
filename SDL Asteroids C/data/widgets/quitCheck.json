@@ -1,0 +1,20 @@
+[	
+	{
+		"type" : "WT_BUTTON",
+		"name" : "yes",
+		"groupName" : "quitCheck",
+		"x" : 180,
+		"y" : 195,
+		"text": "Yes",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "no",
+		"groupName" : "quitCheck",
+		"x" : 180,
+		"y" : 225,
+		"text" : "No",
+		"textAlignHorz": "TAH_CENTER"
+	}
+]

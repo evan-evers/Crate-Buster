@@ -1,0 +1,65 @@
+[
+	{
+		"type" : "WT_BUTTON",
+		"name" : "play",
+		"groupName" : "title",
+		"x" : 180,
+		"y" : 165,
+		"text": "Play",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "howToPlay",
+		"groupName" : "title",
+		"x" : 180,
+		"y" : 195,
+		"text": "How To Play",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "highscores",
+		"groupName" : "title",
+		"x" : 180,
+		"y" : 225,
+		"text" : "Highscores",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "options",
+		"groupName" : "title",
+		"x" : 180,
+		"y" : 255,
+		"text" : "Options",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "credits",
+		"groupName" : "title",
+		"x" : 180,
+		"y" : 285,
+		"text" : "Credits",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "quitToDesktop",
+		"groupName" : "title",
+		"x" : 180,
+		"y" : 315,
+		"text" : "Quit",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "back",
+		"groupName" : "back",
+		"x" : 180,
+		"y" : 300,
+		"text" : "Back",
+		"textAlignHorz": "TAH_CENTER"
+	}
+]

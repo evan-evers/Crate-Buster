@@ -3,8 +3,10 @@
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 
+#include "cursor.h"
 #include "init.h"
 #include "input.h"
+#include "sound.h"
 
 extern App app;
 extern InputManager input;
@@ -23,7 +25,7 @@ bool initSDL(void) {
 		success = false;
 	}
 
-	//Tell SDL to use linear filtering when scaling textures if possible
+	//Tell SDL to use nearest pixel filtering when scaling textures if possible
 	if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest")) {
 		printf("WARNING - nearest pixel sampling could not be enabled.\n");
 	}
@@ -50,9 +52,6 @@ bool initSDL(void) {
 		if (!SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_SCALING, "1")) {
 			printf("WARNING - relative mouse scaling could not be enabled.\n");
 		}
-
-		//start fullscreen
-		SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 
 	//initialize SDL image
@@ -62,14 +61,14 @@ bool initSDL(void) {
 	}
 
 	//Initialize SDL audio
-	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) == -1) {
 		printf("ERROR - Couldn't initialize SDL_mixer: %s\n", SDL_GetError());
 		success = false;
 	}
 
 	//Allocate sound channels
 	//This one doesn't seem to have an error condition, according to SDL documentation
-	Mix_AllocateChannels(MAX_SND_CHANNELS);
+	Mix_AllocateChannels(MAX_SOUND_CHANNELS);
 
 	return success;
 }
@@ -77,6 +76,15 @@ bool initSDL(void) {
 //Initializes game variables and systems.
 bool initGame(void) {
 	bool success = true;
+
+	//load user preferences if they exist
+	loadPreferences();
+
+	//set game to fullscreen or windowed depending on user preferences
+	if(app.preferences.fullscreen)
+		SDL_SetWindowFullscreen(app.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+	else
+		SDL_SetWindowFullscreen(app.window, 0);
 
 	//set window size ratios for proper mouse interaction
 	//code adapted from handleWindowResize from input.c
@@ -103,7 +111,6 @@ bool initGame(void) {
 
 	//initialize input variables
 	input.gamepad = NULL;
-	input.deadzone = 8000;
 
 	//initialize joypad
 	initGamepad();
@@ -111,6 +118,13 @@ bool initGame(void) {
 	//Load the sprite atlases to be used
 	app.fontsAndUI = initSpriteAtlas("gfx/AsteroidsCloneFontsAndUI.png");
 	app.gameplaySprites = initSpriteAtlas("gfx/AsteroidsCloneSpriteSheet.png");
+
+	//set up cursor
+	initCursor();
+
+	//initialize menu widgets (has to go after atlas initializations, since initWidgets() initializes some sprites
+	initWidgets();
+	app.activeWidget = NULL;
 
 	if (app.fontsAndUI == NULL) {
 		printf("ERROR - Fonts and UI could not be loaded: %s\n", IMG_GetError());
@@ -120,6 +134,9 @@ bool initGame(void) {
 		printf("ERROR - Gameplay sprites could not be loaded: %s\n", IMG_GetError());
 		success = false;
 	}
+
+	//initialize sound and music
+	initSounds();
 
 	//randomize
 	srand(time(NULL));
@@ -134,6 +151,13 @@ void close(void) {
 	//Free resources here (pointers are NULLed within the functions)
 	deleteSpriteAtlas(app.fontsAndUI);
 	deleteSpriteAtlas(app.gameplaySprites);
+	deleteSounds();
+
+	//close widget system
+	closeWidgets();
+
+	//delete cursor sprites
+	deleteCursor();
 
 	//close joypad
 	SDL_GameControllerClose(input.gamepad);

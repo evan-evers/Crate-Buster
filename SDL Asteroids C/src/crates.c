@@ -56,24 +56,28 @@ void updateCrates(void) {
 		if (crate->hp <= 0) {
 			//create new crates depending on type
 			//also crate scrap depending on type
+			int n;
 			switch (crate->type) {
 			case(CT_LARGE):
 				addCrate(CT_MEDIUM, crate->x, crate->y);
 				addCrate(CT_MEDIUM, crate->x, crate->y);
-				//8 pieces of scrap
-				for (int i = 0; i < 8; ++i)
+				//7-9 pieces of scrap
+				n = randIntRange(7, 9);
+				for (int i = 0; i < n; ++i)
 					initScrap(crate->x + randFloatRange(-20, 20), crate->y + randFloatRange(-20, 20));
 				break;
 			case(CT_MEDIUM):
 				addCrate(CT_SMALL, crate->x, crate->y);
 				addCrate(CT_SMALL, crate->x, crate->y);
-				//4 pieces of scrap
-				for (int i = 0; i < 4; ++i)
+				//3-5 pieces of scrap
+				n = randIntRange(3, 5);
+				for (int i = 0; i < n; ++i)
 					initScrap(crate->x + randFloatRange(-15, 15), crate->y + randFloatRange(-15, 15));
 				break;
 			case(CT_SMALL):
-				//2 pieces of scrap
-				for (int i = 0; i < 2; ++i)
+				//1-3 pieces of scrap
+				n = randIntRange(1, 3);
+				for (int i = 0; i < n; ++i)
 					initScrap(crate->x + randFloatRange(-10, 10), crate->y + randFloatRange(-10, 10));
 				break;
 			}
@@ -131,6 +135,7 @@ void drawCrates(void) {
 	}
 }
 
+//addCrates would be a better name for this function
 void initCrates(int numberOfCrates) {
 	int x = 0, y = 0;
 	for (int i = 0; i < numberOfCrates; ++i) {
@@ -168,19 +173,19 @@ void addCrate(CrateType type, int x, int y) {
 		crate->crateSprite = initSpriteStatic(app.gameplaySprites, 0, 0, 4, 4, SC_CENTER);
 		crate->crateSpriteHitflash = initSpriteStatic(app.gameplaySprites, 4, 0, 4, 4, SC_CENTER);
 		crate->hp = 100;
-		crate->speed = randFloatRange(1, 2);
+		crate->speed = randFloatRange(1.0 + (stage.level - 1) * 0.2, 1.5 + (stage.level - 1) * 0.2);
 		break;
 	case(CT_MEDIUM):
 		crate->crateSprite = initSpriteStatic(app.gameplaySprites, 0, 4, 3, 3, SC_CENTER);
 		crate->crateSpriteHitflash = initSpriteStatic(app.gameplaySprites, 3, 4, 3, 3, SC_CENTER);
 		crate->hp = 50;
-		crate->speed = randFloatRange(2, 3);
+		crate->speed = randFloatRange(1.5 + (stage.level - 1) * 0.2, 2.0 + (stage.level - 1) * 0.2);
 		break;
 	case(CT_SMALL):
 		crate->crateSprite = initSpriteStatic(app.gameplaySprites, 0, 7, 2, 2, SC_CENTER);
 		crate->crateSpriteHitflash = initSpriteStatic(app.gameplaySprites, 2, 7, 2, 2, SC_CENTER);
 		crate->hp = 25;
-		crate->speed = randFloatRange(3, 4);
+		crate->speed = randFloatRange(2.0 + (stage.level - 1) * 0.2, 2.5 + (stage.level - 1) * 0.2);
 		break;
 	}
 

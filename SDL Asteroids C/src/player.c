@@ -7,9 +7,12 @@
 #include "colliders.h"
 #include "crates.h"
 #include "draw.h"
+#include "fonts.h"
 #include "geometry.h"
 #include "particles.h"
+#include "sound.h"
 #include "stage.h"
+#include "utility.h"
 
 extern App app;
 extern InputManager input;
@@ -29,6 +32,8 @@ void initPlayer(int x, int y);
 void deletePlayer();
 
 static const float PLAYER_SPEED_MAX = 3;
+static const float PLAYER_SPEED_ACCEL = 0.075;
+static const float PLAYER_SPEED_DECCEL = 0.025;
 static const int DASH_TIME_MAX = 20;	//maximum amount of time spent in dash state
 static const float DASH_SPEED_DECAY = 0.30;	//speed decay per frame in dash state
 static const float DASH_SPEED_MAX = 10;	//maximum speed at start of dash state
@@ -38,6 +43,7 @@ static const int DEATH_TIMER_MAX = 120;	//time until respawning
 const int PLAYER_HP_MAX = 3;	//not static, as this is referred to by powerups.h
 static float horzEdgeDist = 48 * SCREENWRAP_MARGIN;	//screenwrap margins
 static float vertEdgeDist = 48 * SCREENWRAP_MARGIN;
+static bool showShipFlame = false;	//keeps track of whether or not the spaceship's flame should be shown
 
 static int deathTimer = 0;	//keeps track of time until respawn
 //muzzle flash particles
@@ -68,24 +74,42 @@ static void psNormal() {
 			player->angle = atan2(input.leftUD, input.leftLR) * RADIANS_TO_DEGREES;
 	}
 
-	//calculate movement vector
+	//calculate intended player movement
 	if (fabs(input.leftLR) > 0 || fabs(input.leftUD) > 0) {
 		player->dirVector.x = input.leftLR;
 		player->dirVector.y = input.leftUD;
+		showShipFlame = true;	//for aesthetics
+	}
+	else {
+		player->dirVector.x = 0;
+		player->dirVector.y = 0;
+		showShipFlame = false;
 	}
 	normalize(&player->dirVector);
 
-	//update momentum
+	//update player's actual movement according to intent
+	//this is my old approach function; should probably turn it into a function and put it in utility.c/h
+	//use accel var to update momentum if player is holding a direction; use deccel var if player isn't holding a direction
 	if (fabs(input.leftLR) > 0 || fabs(input.leftUD) > 0) {
-		player->speed = MIN(PLAYER_SPEED_MAX, player->speed + ACCEL);
+		approach(&player->momentumVector.x, player->dirVector.x, PLAYER_SPEED_ACCEL);
+		approach(&player->momentumVector.y, player->dirVector.y, PLAYER_SPEED_ACCEL);
 	}
 	else {
-		player->speed = MAX(0, player->speed - DECCEL);
+		approach(&player->momentumVector.x, player->dirVector.x, PLAYER_SPEED_DECCEL);
+		approach(&player->momentumVector.y, player->dirVector.y, PLAYER_SPEED_DECCEL);
 	}
 
+	////update momentum
+	//if (fabs(input.leftLR) > 0 || fabs(input.leftUD) > 0) {
+	//	player->speed = MIN(PLAYER_SPEED_MAX, player->speed + ACCEL);
+	//}
+	//else {
+	//	player->speed = MAX(0, player->speed - DECCEL);
+	//}
+
 	//update position
-	player->x += player->dirVector.x * player->speed;
-	player->y += player->dirVector.y * player->speed;
+	player->x += player->momentumVector.x * PLAYER_SPEED_MAX;
+	player->y += player->momentumVector.y * PLAYER_SPEED_MAX;
 
 	//screenwrap
 	if (player->x < -horzEdgeDist)
@@ -110,22 +134,26 @@ static void psNormal() {
 	--player->iFrames;
 
 	//firing guns (updates reload)
-	if (--player->reload <= 0 && input.fire > 0) {
+	if (--player->reload <= 0 && input.fire > 0 && stage.state == SS_GAMEPLAY) {
 		firePlayerBullet();
 
-		//set muzzle flash animation to play
+		//set muzzle flash animation and fire sound to play
 		switch (player->weaponType) {
-			case(WT_NORMAL):
+			case(BT_NORMAL):
 				mfNormal->sprite->currentFrame = 0;
+				playSoundIsolated(SFX_SHOT_FIRE_1, SC_PLAYER_FIRE, false, player->x / SCREEN_WIDTH * 255.0);
 				break;
-			case(WT_ERRATIC):
+			case(BT_ERRATIC):
 				mfErratic->sprite->currentFrame = 0;
+				playSoundIsolated(SFX_SHOT_FIRE_2, SC_PLAYER_FIRE, false, player->x / SCREEN_WIDTH * 255.0);
 				break;
-			case(WT_BOUNCER):
+			case(BT_BOUNCER):
 				mfBouncer->sprite->currentFrame = 0;
+				playSoundIsolated(SFX_SHOT_FIRE_3, SC_PLAYER_FIRE, false, player->x / SCREEN_WIDTH * 255.0);
 				break;
-			case(WT_SHOTGUN):
+			case(BT_SHOTGUN):
 				mfShotgun->sprite->currentFrame = 0;
+				playSoundIsolated(SFX_SHOT_FIRE_4, SC_PLAYER_FIRE, false, player->x / SCREEN_WIDTH * 255.0);
 				break;
 		}
 
@@ -134,32 +162,32 @@ static void psNormal() {
 	}
 
 	//state changes
-	if (input.dashPressed > 0) {
-		//if player isn't inputting a direction, dash towards the cursor
-		if (input.leftLR == 0 && input.leftUD == 0) {
-			player->dirVector.x = cos(player->angle * DEGREES_TO_RADIANS);
-			player->dirVector.y = sin(player->angle * DEGREES_TO_RADIANS);
-		}
+	//if (input.dashPressed > 0) {
+	//	//if player isn't inputting a direction, dash towards the cursor
+	//	if (input.leftLR == 0 && input.leftUD == 0) {
+	//		player->dirVector.x = cos(player->angle * DEGREES_TO_RADIANS);
+	//		player->dirVector.y = sin(player->angle * DEGREES_TO_RADIANS);
+	//	}
 
-		player->speed = DASH_SPEED_MAX;
-		player->dashTimer = DASH_TIME_MAX;
-		player->state = PS_DASHING;
+	//	player->speed = DASH_SPEED_MAX;
+	//	player->dashTimer = DASH_TIME_MAX;
+	//	player->state = PS_DASHING;
 
-		//reset buffer
-		input.dashPressed = 0;
-	}
+	//	//reset buffer
+	//	input.dashPressed = 0;
+	//}
 
 	//kill player when HP is 0
 	if (player->hp <= 0) {
 		//death explosion
 		initParticle(initSpriteAnimated(app.gameplaySprites, 0, 18, 4, 4, SC_CENTER, 5, 0, 0.3, AL_ONESHOT), player->x, player->y, 0, 0, (float)(rand() % 4) * 90, 1, NULL, explosionDraw);
+		playSound(SFX_PLAYER_KILL, SC_PLAYER, false, player->x / SCREEN_WIDTH * 255.0);
 
-		deathTimer = DEATH_TIMER_MAX;
 		player->state = PS_DESTROYED;
 	}
 }
 
-//dashing player state
+//dashing player state (currently unused)
 static void psDashing() {
 	//movement
 
@@ -219,25 +247,7 @@ static void psDashing() {
 
 //destroyed player state
 static void psDestroyed() {
-	deathTimer--;
-
-	//kill player when HP is 0
-	if (deathTimer <= 0) {
-		//reset important variables
-		player->x = SCREEN_WIDTH * 0.5;
-		player->y = SCREEN_HEIGHT * 0.5;
-		player->angle = 0;
-		player->speed = 0;
-		player->dirVector.x = 0;
-		player->dirVector.y = 0;
-		player->dashTimer = 0;
-		player->reload = 0;
-		player->hp = 3;	//3 hits before dying
-		player->iFrames = PLAYER_I_FRAMES_MAX;	//give the player respawn invulnerability in case they spawn on top of some crates
-		player->weaponType = WT_NORMAL;
-
-		player->state = PS_NORMAL;
-	}
+	//do nothing. you're dead.
 }
 
 //update player every game step
@@ -273,6 +283,8 @@ static void checkHitCrates(void) {
 
 				//set background to do hurt flash
 				background.backgroundFlashRedTimer = 0;
+
+				playSound(SFX_PLAYER_HIT, SC_PLAYER, false, player->x / SCREEN_WIDTH * 255.0);
 			}
 			crate->hp = 0;	//destroy crate
 		}
@@ -294,6 +306,8 @@ static void checkHitEnemies(void) {
 
 				//set background to do hurt flash
 				background.backgroundFlashRedTimer = 0;
+
+				playSound(SFX_PLAYER_HIT, SC_PLAYER, false, player->x / SCREEN_HEIGHT * 255);
 			}
 			enemy->hp = 0;	//destroy enemy
 		}
@@ -305,34 +319,34 @@ static void checkHitEnemies(void) {
 //draw player
 void drawPlayer() {
 	//only draw if player's not dead
-	if (player->state != PS_DESTROYED) {
+	if (player != NULL && player->state != PS_DESTROYED) {
 		if (player->iFrames <= 0 || player->iFrames % 10 > 5) {
 			//draw as normal
 			//draw sprite at center of player
-			blitSpriteStaticEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, player->angle, NULL, SDL_FLIP_NONE, 255);
+			blitSpriteStaticEX(player->shipSprite, player->x, player->y, player->angle, NULL, SDL_FLIP_NONE, 255);
 			//flame's just magic-numbered into place
 			//flame's rotation origin is the center of the ship
-			blitAndUpdateSpriteAnimatedEX(player->shipFlame, player->x - player->shipSprite->w * 0.5 - player->shipFlame->w, player->y - player->shipFlame->h * 0.5,
-			 player->angle, &(SDL_Point){(player->shipSprite->w) * 0.5 + player->shipFlame->w, player->shipFlame->h * 0.5}, SDL_FLIP_NONE, 255);
+			if (showShipFlame)
+				blitAndUpdateSpriteAnimatedEX(player->shipFlame, player->x - 30, player->y, player->angle, &(SDL_Point){(player->shipFlame->w) * 0.5 + 30, player->shipFlame->h * 0.5}, SDL_FLIP_NONE, 255);
 		}
 		else {
 			//blinking when i-frames are active
 			//draw player with half-transparency
 			setTextureRGBA(player->shipSprite->atlas->texture, 255, 255, 255, 127);		//since both of the player's sprite share the same atlas, i'm only calling this once
-			blitSpriteStaticEX(player->shipSprite, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, player->angle, NULL, SDL_FLIP_NONE);
-			blitAndUpdateSpriteAnimatedEX(player->shipFlame, player->x - player->shipSprite->w * 0.5 - player->shipFlame->w, player->y - player->shipFlame->h * 0.5,
-			 player->angle, &(SDL_Point){(player->shipSprite->w) * 0.5 + player->shipFlame->w, player->shipFlame->h * 0.5}, SDL_FLIP_NONE);
+			blitSpriteStaticEX(player->shipSprite, player->x, player->y, player->angle, NULL, SDL_FLIP_NONE, 255);
+			if (showShipFlame)
+				blitAndUpdateSpriteAnimatedEX(player->shipFlame, player->x - 30, player->y, player->angle, &(SDL_Point){(player->shipFlame->w) * 0.5 + 30, player->shipFlame->h * 0.5}, SDL_FLIP_NONE, 255);
 			setTextureRGBA(player->shipSprite->atlas->texture, 255, 255, 255, 255);	
 		}
 
 		//powerup flash
 		setTextureRGBA(app.gameplaySprites->texture, 255, 255, 255, MAX((int)(255 * (float)(END_OF_FLASH - timeSincePowerupCollected) / (float)END_OF_FLASH), 0));
-		blitSpriteStaticEX(powerupFlash, player->x - player->shipSprite->w * 0.5, player->y - player->shipSprite->h * 0.5, player->angle, NULL, SDL_FLIP_NONE);
+		blitSpriteStaticEX(powerupFlash, player->x, player->y, player->angle, NULL, SDL_FLIP_NONE);
 		setTextureRGBA(app.gameplaySprites->texture, 255, 255, 255, 255);
+	
+		//only happens if app.debug = true
+		displayCollider(app.renderer, &COLOR_RED, player->collider);
 	}
-
-	//only happens if app.debug = true
-	displayCollider(app.renderer, &COLOR_RED, player->collider);
 }
 
 //muzzle flash particle update function
@@ -367,9 +381,9 @@ void initPlayer(int x, int y) {
 	player->reload = 0;
 	player->hp = PLAYER_HP_MAX;	//3 hits before dying
 	player->iFrames = 0;
-	player->weaponType = WT_NORMAL;
-	player->shipSprite = initSpriteStatic(app.gameplaySprites, 0, 11, 3, 3, SC_TOP_LEFT);
-	player->shipFlame = initSpriteAnimated(app.gameplaySprites, 16, 16, 1, 1, SC_TOP_LEFT, 4, 0, 0.25, AL_LOOP);
+	player->weaponType = BT_NORMAL;
+	player->shipSprite = initSpriteStatic(app.gameplaySprites, 0, 11, 3, 3, SC_CENTER);
+	player->shipFlame = initSpriteAnimated(app.gameplaySprites, 16, 16, 1, 1, SC_CENTER, 4, 0, 0.25, AL_LOOP);
 	player->collider = initOBBCollider(player->shipSprite->w * 0.2, player->shipSprite->h * 0.2, (Vector2){ player->x, player->y }, player->angle);
 
 	//initialize muzzle flash particles
@@ -380,7 +394,25 @@ void initPlayer(int x, int y) {
 	mfShotgun = initParticle(initSpriteAnimated(app.gameplaySprites, 16, 11, 1, 1, SC_CENTER, 5, 5, 0.5, AL_ONESHOT), 0, 0, 0, 0, 0, 1, mfUpdate, mfDraw);
 
 	//initialize powerup flash
-	powerupFlash = initSpriteStatic(app.gameplaySprites, 3, 11, 3, 3, SC_TOP_LEFT);
+	powerupFlash = initSpriteStatic(app.gameplaySprites, 3, 11, 3, 3, SC_CENTER);
+}
+
+//resets certain player variables when the player respawns
+void resetPlayer(int x, int y) {
+	//reset important variables
+	player->x = x;
+	player->y = y;
+	player->angle = 0;
+	player->speed = 0;
+	player->dirVector.x = 0;
+	player->dirVector.y = 0;
+	player->dashTimer = 0;
+	player->reload = 0;
+	player->hp = PLAYER_HP_MAX;	//3 hits before dying
+	player->iFrames = 0;	//give the player respawn invulnerability in case they spawn on top of some crates
+	player->weaponType = BT_NORMAL;
+
+	player->state = PS_NORMAL;
 }
 
 //destruct player
@@ -390,6 +422,7 @@ void deletePlayer() {
 	free(player->shipFlame);
 	free(player->collider);
 	free(player);
+	player = NULL;
 
 	//muzzle flash particles are automatically deallocated
 

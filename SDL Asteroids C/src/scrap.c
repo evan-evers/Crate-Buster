@@ -63,7 +63,7 @@ static void scrapUpdate(Particle *scrap) {
 		scrap->y = -VERT_EDGE_DIST;
 
 	//if close enough to the player, increment score and delete this projectile
-	if (distanceSquared(scrap->x, scrap->y, player->x, player->y) < SCRAP_COLLECT_DISTANCE_SQUARED) {
+	if (distanceSquared(scrap->x, scrap->y, player->x, player->y) < SCRAP_COLLECT_DISTANCE_SQUARED && player->state != PS_DESTROYED) {
 		stage.score += SCRAP_VALUE;
 
 		//initParticle(initSpriteAnimated(app.gameplaySprites, 16, 21, 1, 1, SC_CENTER, 5, 0, 0.15, AL_ONESHOT), scrap->x, scrap->y, 0, 0, 0, 1, NULL, scrapCollectFlashDraw);

@@ -11,16 +11,9 @@ void initBackground(void);
 void drawBackground(void);
 void deleteBackground(void);
 
-static SpriteStatic *backgroundBlack = NULL;	//the black part of the background
-static SpriteStatic *backgroundFlashRed = NULL;
-static SpriteStatic *backgroundFlashWhite = NULL;
+SDL_Rect screenRect = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };	//a rectangle covering the screen for drawing backgrounds to
 
 void initBackground(void) {
-	//initalize background sprites
-	backgroundBlack = initSpriteStatic(app.gameplaySprites, 26, 6, 1, 1, SC_TOP_LEFT);
-	backgroundFlashRed = initSpriteStatic(app.gameplaySprites, 27, 6, 1, 1, SC_TOP_LEFT);
-	backgroundFlashWhite = initSpriteStatic(app.gameplaySprites, 28, 6, 1, 1, SC_TOP_LEFT);
-
 	//initialize background timers
 	background.backgroundFlashRedTimer = END_OF_FLASH * 3;
 	background.backgroundFlashWhiteTimer = END_OF_FLASH * 3;
@@ -45,35 +38,26 @@ void initBackground(void) {
 //stars are drawn with less alpha the further back they are
 void drawBackground(void) {
 	//draw black background
-	//it'd be more effecient to just draw this as one stretched texture I think, but i haven't added support for texture scaling yet
-	for (int y = 0; y < SCREEN_HEIGHT; y += SPRITE_ATLAS_CELL_H) {
-		for (int x = 0; x < SCREEN_WIDTH; x += SPRITE_ATLAS_CELL_W) {
-			blitSpriteStatic(backgroundBlack, x, y);
-		}
-	}
+	//draw a semitransparent black rectangle over the screen
+	//stuff like this is why I need a rectangle drawing function
+	SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(app.renderer, PALETTE_BLACK.r, PALETTE_BLACK.g, PALETTE_BLACK.b, PALETTE_BLACK.a);
+	SDL_RenderFillRect(app.renderer, &screenRect);
 
-	//draw red flash when player collects a powerup
+	//draw red flash when player is hit
 	//only do this if alpha is greater than 0
 	if (background.backgroundFlashRedTimer < END_OF_FLASH * 3) {
-		setTextureRGBA(app.gameplaySprites->texture, 255, 255, 255, (int)(255 * (float)((END_OF_FLASH * 3) - background.backgroundFlashRedTimer) / (float)(END_OF_FLASH * 3)));
-		for (int y = 0; y < SCREEN_HEIGHT; y += SPRITE_ATLAS_CELL_H) {
-			for (int x = 0; x < SCREEN_WIDTH; x += SPRITE_ATLAS_CELL_W) {
-				blitSpriteStatic(backgroundFlashRed, x, y);
-			}
-		}
-		setTextureRGBA(app.gameplaySprites, 255, 255, 255, 255);
+		SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(app.renderer, PALETTE_RED.r, PALETTE_RED.g, PALETTE_RED.b, (int)(255 * (float)((END_OF_FLASH * 3) - background.backgroundFlashRedTimer) / (float)(END_OF_FLASH * 3)));
+		SDL_RenderFillRect(app.renderer, &screenRect);
 	}
 
-	//draw green flash when player is hit
+	//draw white flash when player collects a powerup
 	//only do this if alpha is greater than 0
 	if (background.backgroundFlashWhiteTimer < END_OF_FLASH * 3) {
-		setTextureRGBA(app.gameplaySprites->texture, 255, 255, 255, (int)(255 * (float)((END_OF_FLASH * 3) - background.backgroundFlashWhiteTimer) / (float)(END_OF_FLASH * 12)));
-		for (int y = 0; y < SCREEN_HEIGHT; y += SPRITE_ATLAS_CELL_H) {
-			for (int x = 0; x < SCREEN_WIDTH; x += SPRITE_ATLAS_CELL_W) {
-				blitSpriteStatic(backgroundFlashWhite, x, y);
-			}
-		}
-		setTextureRGBA(app.gameplaySprites, 255, 255, 255, 255);
+		SDL_SetRenderDrawBlendMode(app.renderer, SDL_BLENDMODE_BLEND);
+		SDL_SetRenderDrawColor(app.renderer, PALETTE_WHITE.r, PALETTE_WHITE.g, PALETTE_WHITE.b, (int)(63 * (float)((END_OF_FLASH * 3) - background.backgroundFlashWhiteTimer) / (float)(END_OF_FLASH * 3)));
+		SDL_RenderFillRect(app.renderer, &screenRect);
 	}
 
 	//draw stars
@@ -99,9 +83,8 @@ void drawBackground(void) {
 }
 
 void deleteBackground(void) {
-	free(backgroundBlack);
-	free(backgroundFlashRed);
-	free(backgroundFlashWhite);
-
+	//sorry nothing
+	//this used to have a reason for existing, but now it doesn't
+	
 	//particles automatically deallocated by particle delete function
 }

@@ -1,0 +1,29 @@
+[
+	{
+		"type" : "WT_BUTTON",
+		"name" : "tryAgain",
+		"groupName" : "gameOver",
+		"x" : 180,
+		"y" : 255,
+		"text": "Try Again",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "quitToTitle",
+		"groupName" : "gameOver",
+		"x" : 180,
+		"y" : 285,
+		"text" : "Quit To Title",
+		"textAlignHorz": "TAH_CENTER"
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "quitToDesktop",
+		"groupName" : "gameOver",
+		"x" : 180,
+		"y" : 315,
+		"text" : "Quit To Desktop",
+		"textAlignHorz": "TAH_CENTER"
+	}
+]

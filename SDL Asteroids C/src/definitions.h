@@ -15,6 +15,12 @@
 #define REPEAT(n) \
 	for(int i = 0; i < n; ++i)
 
+//Utility macros
+#define MAX_STRING_LENGTH 128	//max length for any string in the game. maybe a bit low but this isn't exactly a text-heavy game
+#define MAX_LABEL_LENGTH 64	//used for identifying label strings in structs
+#define MAX_NAME_LENGTH 24	//max length of a name for a highscore
+#define MAX_INPUT_LENGTH 16	//length of inputText in an InputManager object
+
 //Game macros
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 360
@@ -35,9 +41,10 @@
 #define MAX_ENEMIES 10	//largest number of enemies that can be in the game at once
 #define BULLET_OFFSET_PLAYER 20	//offset from the center of the player when a player bullet is created
 #define BULLET_OFFSET_ENEMY 25	//offset from the center of an enemy when an enemy bullet is created
-#define NUM_BACKGROUND_STARS_L1 25
-#define NUM_BACKGROUND_STARS_L2 25
-#define NUM_BACKGROUND_STARS_L3 25
+#define NUM_BACKGROUND_STARS_L1 50
+#define NUM_BACKGROUND_STARS_L2 50
+#define NUM_BACKGROUND_STARS_L3 50
+#define NUM_HIGHSCORES 5	//the number of highscores that will be saved
 
 #define MAX_KEYBOARD_KEYS 150
 #define GAMEPAD_AXIS_MAX 32767
@@ -45,7 +52,7 @@
 #define MAX_MOUSE_BUTTONS 50
 
 //Audio macros
-#define MAX_SND_CHANNELS 8
-
+#define MAX_SOUND_CHANNELS 8	//the maximum number of sound channels, and the maximum number of sounds that can be played simultaneously
+#define PAN_CENTER 127			//pass into playSound or playSoundIsolated to keep sound centered
 
 #endif

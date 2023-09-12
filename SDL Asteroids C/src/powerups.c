@@ -2,11 +2,13 @@
 
 #include "background.h"
 #include "draw.h"
+#include "fonts.h"
 #include "geometry.h"
 #include "particles.h"
 #include "player.h"
 #include "powerups.h"
 #include "scrap.h"
+#include "sound.h"
 #include "stage.h"
 
 extern App app;
@@ -24,6 +26,10 @@ static const float POWERUP_MAX_SPD = 5;
 static const int HORZ_EDGE_DIST = 16;	//screenwrap var
 static const int VERT_EDGE_DIST = 16;	//screenwrap var
 static const float POWERUP_COLLECT_DISTANCE_SQUARED = 25 * 25;	//distance at which a piece of scrap is collected by the player, squared for an optimized calculation
+static const int POWERUP_TEXT_OFFSET = 50;	//how far offset the collection info text should be from the center of the powerup
+static const char * const POWERUP_INFO_TEXT_HP = "+HP!";
+static const char * const POWERUP_INFO_TEXT_SCRAP = "+SCRAP!";
+static char powerupInfoText[10];	//buffer that holds the text to be referred to by the powerup info text function
 static SpriteStatic *powerupCell = NULL;
 static SpriteStatic *powerupCellShine = NULL;
 
@@ -45,10 +51,24 @@ static void powerupCollectShockwaveDraw(Particle *particle) {
 		particle->ttl = 0; 	//delete particle when animation is over
 }
 
+static void powerupInfoTextUpdate(Particle *particle) {
+	particle->x = player->x;
+	particle->y = player->y - POWERUP_TEXT_OFFSET;
+}
+
+static void powerupInfoTextDraw(Particle *particle) {
+	//flash text
+	if (particle->ttl % 20 > 5) {
+		drawTextDropShadow(powerupInfoText, particle->x, particle->y, PALETTE_WHITE, TAH_CENTER, NULL, PALETTE_BLACK, 1);
+	}
+
+	--particle->ttl;
+}
+
 //update function for powerups
 static void powerupUpdate(Particle *powerup) {
-	//accelerate towards the player if closeby
-	if (distanceSquared(powerup->x, powerup->y, player->x, player->y) < POWERUP_MOVE_DISTANCE_SQUARED) {
+	//accelerate towards the player if closeby & player isn't dead
+	if (distanceSquared(powerup->x, powerup->y, player->x, player->y) < POWERUP_MOVE_DISTANCE_SQUARED && player != PS_DESTROYED) {
 		if (player->x < powerup->x)
 			powerup->deltaX = MAX(powerup->deltaX - POWERUP_ACCEL, -POWERUP_MAX_SPD);
 		else
@@ -70,7 +90,7 @@ static void powerupUpdate(Particle *powerup) {
 			powerup->deltaY = MAX(powerup->deltaY - POWERUP_ACCEL, 0);
 	}
 
-	//move scrap
+	//move powerup
 	powerup->x += powerup->deltaX;
 	powerup->y += powerup->deltaY;
 
@@ -84,11 +104,12 @@ static void powerupUpdate(Particle *powerup) {
 	if (powerup->y > SCREEN_HEIGHT + VERT_EDGE_DIST)
 		powerup->y = -VERT_EDGE_DIST;
 
-	//if close enough to the player, increment score and delete this projectile
-	if (distanceSquared(powerup->x, powerup->y, player->x, player->y) < POWERUP_COLLECT_DISTANCE_SQUARED) {
+	//if close enough to the player & player isn't dead, increment score and delete this projectile
+	if (distanceSquared(powerup->x, powerup->y, player->x, player->y) < POWERUP_COLLECT_DISTANCE_SQUARED && player != PS_DESTROYED) {
 		//collection particle
 		initParticle(initSpriteAnimated(app.gameplaySprites, 0, 16, 2, 2, SC_BOTTOM_RIGHT, 5, 0, 0.05, AL_ONESHOT), player->x, player->y, 0, 0, 0, 1, powerupCollectShockwaveUpdate, powerupCollectShockwaveDraw);
-		
+		playSound(SFX_POWER_UP, SC_ANY, false, powerup->x / SCREEN_HEIGHT * 255);
+
 		//set player to do powerup collection flash
 		timeSincePowerupCollected = 0;
 
@@ -98,29 +119,35 @@ static void powerupUpdate(Particle *powerup) {
 		//change player weapon
 		switch (powerup->sprite->srcX) {
 		case(0):
-			player->weaponType = WT_NORMAL;
+			player->weaponType = BT_NORMAL;
 			break;
 		case(32):
-			player->weaponType = WT_ERRATIC;
+			player->weaponType = BT_ERRATIC;
 			break;
 		case(64):
-			player->weaponType = WT_BOUNCER;
+			player->weaponType = BT_BOUNCER;
 			break;
 		case(96):
-			player->weaponType = WT_SHOTGUN;
+			player->weaponType = BT_SHOTGUN;
 			break;
 		}
 
 		//give player hp if they need it; otherwise, give a bunch of scrap.
 		if (player->hp < PLAYER_HP_MAX) {
 			++player->hp;
-			//draw some text to the screen explaining this later
+			
+			STRNCPY(powerupInfoText, POWERUP_INFO_TEXT_HP, 6);
 		}
 		else {
 			//if player's hp is full, give scrap
 			for (int i = 0; i < 20; ++i)
 				initScrap(player->x + randFloatRange(-40, 40), player->y + randFloatRange(-40, 40));
+
+			STRNCPY(powerupInfoText, POWERUP_INFO_TEXT_SCRAP, 9);
 		}
+
+		//create info text as a particle
+		initParticle(NULL, player->x, player->y - POWERUP_TEXT_OFFSET, 0, 0, 0, FPS, powerupInfoTextUpdate, powerupInfoTextDraw);
 
 		powerup->ttl = 0;
 	}
@@ -138,24 +165,24 @@ static void powerupDraw(Particle *powerup) {
 //initializes a new powerup
 void initPowerup(int x, int y) {
 	//initialize particle as a type that the player doesn't already have
-	WeaponType type;
+	BulletType type;
 
 	do {
 		switch (rand() % 4) {
 			case(0):
-				type = WT_NORMAL;
+				type = BT_NORMAL;
 				break;
 			case(1):
-				type = WT_ERRATIC;
+				type = BT_ERRATIC;
 				break;
 			case(2):
-				type = WT_BOUNCER;
+				type = BT_BOUNCER;
 				break;
 			case(3):
-				type = WT_SHOTGUN;
+				type = BT_SHOTGUN;
 				break;
 			default:
-				type = WT_NORMAL;
+				type = BT_NORMAL;
 		}
 	} while (type == player->weaponType);
 
@@ -171,16 +198,16 @@ void initPowerup(int x, int y) {
 
 	//initialize powerup
 	switch (type) {
-		case(WT_NORMAL):
+		case(BT_NORMAL):
 			initParticle(initSpriteAnimated(app.gameplaySprites, 0, 14, 2, 2, SC_CENTER, 1, 0, 0, AL_ONESHOT), x, y, 0, 0, 0, 1, powerupUpdate, powerupDraw);
 			break;
-		case(WT_ERRATIC):
+		case(BT_ERRATIC):
 			initParticle(initSpriteAnimated(app.gameplaySprites, 2, 14, 2, 2, SC_CENTER, 1, 0, 0, AL_ONESHOT), x, y, 0, 0, 0, 1, powerupUpdate, powerupDraw);
 			break;
-		case(WT_BOUNCER):
+		case(BT_BOUNCER):
 			initParticle(initSpriteAnimated(app.gameplaySprites, 4, 14, 2, 2, SC_CENTER, 1, 0, 0, AL_ONESHOT), x, y, 0, 0, 0, 1, powerupUpdate, powerupDraw);
 			break;
-		case(WT_SHOTGUN):
+		case(BT_SHOTGUN):
 			initParticle(initSpriteAnimated(app.gameplaySprites, 6, 14, 2, 2, SC_CENTER, 1, 0, 0, AL_ONESHOT), x, y, 0, 0, 0, 1, powerupUpdate, powerupDraw);
 			break;
 		default:

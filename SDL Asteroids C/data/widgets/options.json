@@ -1,0 +1,48 @@
+[
+	{
+		"type" : "WT_SELECT",
+		"name" : "displayMode",
+		"groupName" : "options",
+		"x" : 180,
+		"y" : 135,
+		"text": "Display Mode: ",
+		"textAlignHorz": "TAH_RIGHT",
+		"options" : [
+			"Windowed",
+			"Fullscreen"
+		]
+	},
+	{
+		"type" : "WT_SLIDER",
+		"name" : "sfxSlider",
+		"groupName" : "options",
+		"x" : 180,
+		"y" : 165,
+		"text" : "SFX Volume: ",
+		"textAlignHorz": "TAH_RIGHT",
+		"minValue" : 0,
+		"maxValue" : 10,
+		"step" : 1
+	},
+	{
+		"type" : "WT_SLIDER",
+		"name" : "musicSlider",
+		"groupName" : "options",
+		"x" : 180,
+		"y" : 195,
+		"text" : "Music Volume: ",
+		"textAlignHorz": "TAH_RIGHT",
+		"minValue" : 0,
+		"maxValue" : 10,
+		"step" : 1
+	},
+	{
+		"type" : "WT_BUTTON",
+		"name" : "back",
+		"groupName" : "options",
+		"x" : 180,
+		"y" : 255,
+		"text" : "Back",
+		"textAlignHorz": "TAH_CENTER"
+	}
+]

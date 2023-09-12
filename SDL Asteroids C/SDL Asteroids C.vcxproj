@@ -25,38 +25,56 @@
     <ClInclude Include="src\colors.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\crates.h" />
+    <ClInclude Include="src\cursor.h" />
     <ClInclude Include="src\definitions.h" />
     <ClInclude Include="src\draw.h" />
     <ClInclude Include="src\enemies.h" />
+    <ClInclude Include="src\fonts.h" />
     <ClInclude Include="src\geometry.h" />
+    <ClInclude Include="src\highscores.h" />
     <ClInclude Include="src\init.h" />
     <ClInclude Include="src\input.h" />
+    <ClInclude Include="src\json\cJSON.h" />
+    <ClInclude Include="src\mainMenu.h" />
     <ClInclude Include="src\particles.h" />
     <ClInclude Include="src\player.h" />
     <ClInclude Include="src\powerups.h" />
     <ClInclude Include="src\random.h" />
     <ClInclude Include="src\scrap.h" />
+    <ClInclude Include="src\sound.h" />
     <ClInclude Include="src\stage.h" />
     <ClInclude Include="src\structs.h" />
+    <ClInclude Include="src\ui.h" />
+    <ClInclude Include="src\utility.h" />
+    <ClInclude Include="src\widgets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\background.c" />
-    <ClCompile Include="src\bullet.c" />
+    <ClCompile Include="src\bullets.c" />
     <ClCompile Include="src\colliders.c" />
     <ClCompile Include="src\colors.c" />
     <ClCompile Include="src\crates.c" />
+    <ClCompile Include="src\cursor.c" />
     <ClCompile Include="src\draw.c" />
     <ClCompile Include="src\enemies.c" />
+    <ClCompile Include="src\fonts.c" />
     <ClCompile Include="src\geometry.c" />
+    <ClCompile Include="src\highscores.c" />
     <ClCompile Include="src\init.c" />
     <ClCompile Include="src\input.c" />
+    <ClCompile Include="src\json\cJSON.c" />
     <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\mainMenu.c" />
     <ClCompile Include="src\particles.c" />
     <ClCompile Include="src\player.c" />
     <ClCompile Include="src\powerups.c" />
     <ClCompile Include="src\random.c" />
     <ClCompile Include="src\scrap.c" />
+    <ClCompile Include="src\sound.c" />
     <ClCompile Include="src\stage.c" />
+    <ClCompile Include="src\ui.c" />
+    <ClCompile Include="src\utility.c" />
+    <ClCompile Include="src\widgets.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -111,8 +129,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\SDL\SDL2_ttf-2.20.1\include;C:\SDL\SDL2_mixer-2.6.2\include;C:\SDL\SDL2_image-2.6.2\include;C:\SDL\SDL2-2.24.2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\SDL\SDL2_ttf-2.20.1\lib\x64;C:\SDL\SDL2_mixer-2.6.2\lib\x64;C:\SDL\SDL2_image-2.6.2\lib\x64;C:\SDL\SDL2-2.24.2\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\resources\SDL\SDL2_mixer-2.6.2\include;$(ProjectDir)\resources\SDL\SDL2_image-2.6.2\include;$(ProjectDir)\resources\SDL\SDL2-2.24.2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\resources\SDL\SDL2_mixer-2.6.2\lib\x64;$(ProjectDir)\resources\SDL\SDL2_image-2.6.2\lib\x64;$(ProjectDir)\resources\SDL\SDL2-2.24.2\lib\x64;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(ProjectDir)\resources\SDL\SDL2_image-2.6.2\include;$(ProjectDir)\resources\SDL\SDL2_mixer-2.6.2\include;$(ProjectDir)\resources\SDL\SDL2-2.24.2\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\resources\SDL\SDL2-2.24.2\lib\x64;$(ProjectDir)\resources\SDL\SDL2_image-2.6.2\lib\x64;$(ProjectDir)\resources\SDL\SDL2_mixer-2.6.2\lib\x64;$(LibraryPath)</LibraryPath>
+    <TargetExt>.exe</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -146,13 +169,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -161,14 +185,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -72,6 +72,33 @@
     <ClInclude Include="src\background.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\fonts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mainMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\widgets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\json\cJSON.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\highscores.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cursor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\draw.c">
@@ -92,7 +119,7 @@
     <ClCompile Include="src\geometry.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\bullet.c">
+    <ClCompile Include="src\bullets.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\stage.c">
@@ -123,6 +150,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\background.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\fonts.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mainMenu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\widgets.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utility.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\json\cJSON.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\highscores.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sound.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cursor.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
