@@ -368,8 +368,7 @@ static void mfDraw(Particle *particle) {
 
 //initialize player at pos (x,y)
 void initPlayer(int x, int y) {
-	player = malloc(sizeof(Player));
-	memset(player, 0, sizeof(Player));
+	player = calloc(1, sizeof(Player));
 	player->x = x;
 	player->y = y;
 	player->angle = 0;

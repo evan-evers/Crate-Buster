@@ -16,8 +16,7 @@ void explosionDraw(Particle *particle);
 Particle *initParticle(SpriteAnimated *sprite, float x, float y, float deltaX, float deltaY, float angle, int ttl, void (*update)(void), void (*draw)(void)) {
 	Particle *particle;
 
-	particle = malloc(sizeof(Particle));
-	memset(particle, 0, sizeof(Particle));
+	particle = calloc(1, sizeof(Particle));
 	if (stage.particleHead == NULL) {
 		stage.particleHead = stage.particleTail = particle;
 	}

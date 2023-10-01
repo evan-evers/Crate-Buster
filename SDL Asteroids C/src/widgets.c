@@ -367,9 +367,8 @@ static void createWidget(cJSON *root) {
 	type = getWidgetType(cJSON_GetObjectItem(root, "type")->valuestring);
 
 	if (type != -1) {
-		//allocate memory for widget, 0 that memory, and add it to the widget list
-		widget = malloc(sizeof(Widget));
-		memset(widget, 0, sizeof(Widget));
+		//allocate 0ed memory for widget, and add it to the widget list
+		widget = calloc(1, sizeof(Widget));
 		if (widgetHead == NULL) {
 			widgetHead = widget;
 			widgetTail = widget;
@@ -437,9 +436,8 @@ static void createSelectWidget(Widget *widget, cJSON *root) {
 	int           i, length;
 	SelectWidget *selectWidget;	//temp pointer to initialize selectWidget
 
-	//allocate space for subwidget, 0 subwidget's memory, and set its parent widget to point to it
-	selectWidget = malloc(sizeof(SelectWidget));
-	memset(selectWidget, 0, sizeof(SelectWidget));
+	//allocate 0ed memory for subwidget, and set its parent widget to point to it
+	selectWidget = calloc(1, sizeof(SelectWidget));
 	widget->data = selectWidget;
 
 	//initialize select widget
@@ -478,9 +476,8 @@ static void createSelectWidget(Widget *widget, cJSON *root) {
 static void createSliderWidget(Widget *widget, cJSON *root) {
 	SliderWidget *sliderWidget;
 
-	//allocate space for subwidget, 0 subwidget's memory, and set its parent widget to point to it
-	sliderWidget = malloc(sizeof(SliderWidget));
-	memset(sliderWidget, 0, sizeof(SliderWidget));
+	//allocate 0ed memory for subwidget, and set its parent widget to point to it
+	sliderWidget = calloc(1, sizeof(SliderWidget));
 	widget->data = sliderWidget;
 
 	//set variables related to how the bar can be changed by the user
@@ -502,8 +499,8 @@ static void createSliderWidget(Widget *widget, cJSON *root) {
 static void createTextInputWidget(Widget *widget, cJSON *root) {
 	TextInputWidget *textInputWidget;
 
-	//allocate space for subwidget, 0 subwidget's memory, and set its parent widget to point to it
-	textInputWidget = malloc(sizeof(TextInputWidget));
+	//allocate 0ed memory for subwidget, and set its parent widget to point to it
+	textInputWidget = calloc(1, sizeof(TextInputWidget));
 	memset(textInputWidget, 0, sizeof(TextInputWidget));
 	widget->data = textInputWidget;
 
@@ -523,8 +520,7 @@ static void createControlWidget(Widget *widget, cJSON *root) {
 	ControlWidget *controlWidget;
 
 	//allocate space for subwidget, 0 subwidget's memory, and set its parent widget to point to it
-	controlWidget = malloc(sizeof(ControlWidget));
-	memset(controlWidget, 0, sizeof(ControlWidget));
+	controlWidget = calloc(1, sizeof(ControlWidget));
 	widget->data = controlWidget;
 
 	//give the parent widget the same dimensions as its text

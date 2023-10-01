@@ -43,8 +43,7 @@ static void muzzleFlashDraw(Particle *particle) {
 void initEnemy(void) {
 	Enemy *enemy;
 	
-	enemy = malloc(sizeof(Enemy));
-	memset(enemy, 0, sizeof(Enemy));
+	enemy = calloc(1, sizeof(Enemy));
 	if (stage.enemyHead == NULL) {
 		stage.enemyHead = enemy;
 		stage.enemyTail = enemy;

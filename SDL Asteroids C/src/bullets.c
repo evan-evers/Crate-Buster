@@ -67,8 +67,7 @@ static void fireNormalBullet() {
 	Bullet *bullet;
 
 	//allocate and add to list
-	bullet = malloc(sizeof(Bullet));
-	memset(bullet, 0, sizeof(Bullet));
+	bullet = calloc(1, sizeof(Bullet));
 	if (stage.bulletHead == NULL) {
 		stage.bulletHead = bullet;
 		stage.bulletTail = bullet;
@@ -98,8 +97,7 @@ static void fireErraticBullet() {
 	Bullet *bullet;
 
 	//allocate and add to list
-	bullet = malloc(sizeof(Bullet));
-	memset(bullet, 0, sizeof(Bullet));
+	bullet = calloc(1, sizeof(Bullet));
 	if (stage.bulletHead == NULL) {
 		stage.bulletHead = bullet;
 		stage.bulletTail = bullet;
@@ -129,8 +127,7 @@ static void fireBouncerBullet() {
 	Bullet *bullet;
 
 	//allocate and add to list
-	bullet = malloc(sizeof(Bullet));
-	memset(bullet, 0, sizeof(Bullet));
+	bullet = calloc(1, sizeof(Bullet));
 	if (stage.bulletHead == NULL) {
 		stage.bulletHead = bullet;
 		stage.bulletTail = bullet;
@@ -161,8 +158,7 @@ static void fireShotgunBullet() {
 	int numBullets = randIntRange(8,11);	//8 - 10 bullets shot per shot
 	for (int i = 0; i < numBullets; ++i) {
 		//allocate and add to list
-		bullet = malloc(sizeof(Bullet));
-		memset(bullet, 0, sizeof(Bullet));
+		bullet = calloc(1, sizeof(Bullet));
 		if (stage.bulletHead == NULL) {
 			stage.bulletHead = bullet;
 			stage.bulletTail = bullet;
@@ -194,8 +190,7 @@ void fireEnemyBullet(Enemy *enemy) {
 	Bullet *bullet;
 
 	//allocate and add to list
-	bullet = malloc(sizeof(Bullet));
-	memset(bullet, 0, sizeof(Bullet));
+	bullet = calloc(1, sizeof(Bullet));
 	if (stage.bulletHead == NULL) {
 		stage.bulletHead = bullet;
 		stage.bulletTail = bullet;

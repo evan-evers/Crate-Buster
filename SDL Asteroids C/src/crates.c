@@ -155,8 +155,7 @@ void initCrates(int numberOfCrates) {
 
 void addCrate(CrateType type, int x, int y) {
 	//allocate and add to list
-	Crate* crate = malloc(sizeof(Crate));
-	memset(crate, 0, sizeof(Crate));	//set all values to 0 as a precaution (it's really easy to forget to initialize stuff)
+	Crate* crate = calloc(1, sizeof(Crate));
 	if (stage.crateHead == NULL) {
 		stage.crateHead = crate;
 		stage.crateTail = crate;

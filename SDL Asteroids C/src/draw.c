@@ -361,8 +361,7 @@ void blitAndUpdateSpriteAnimatedEX(SpriteAnimated* sprite, int x, int y, float a
 
 //loads the atlas's texture and initializes its members
 SpriteAtlas* initSpriteAtlas(char* filename) {
-	SpriteAtlas *atlas = malloc(sizeof(SpriteAtlas));
-	memset(atlas, 0, sizeof(SpriteAtlas));
+	SpriteAtlas *atlas = calloc(1, sizeof(SpriteAtlas));
 	atlas->texture = loadTexture(filename);
 
 	if (atlas->texture == NULL) {
@@ -378,8 +377,7 @@ SpriteAtlas* initSpriteAtlas(char* filename) {
 
 //initializes struct's members
 SpriteStatic* initSpriteStatic(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h, SpriteCenter center) {
-	SpriteStatic* sprite = malloc(sizeof(SpriteStatic));
-	memset(sprite, 0, sizeof(SpriteStatic));
+	SpriteStatic* sprite = calloc(1, sizeof(SpriteStatic));
 	sprite->atlas = atlas;
 	//convert these bits into pixels now for quicker calculations later
 	sprite->srcX = srcX * SPRITE_ATLAS_CELL_W;
@@ -394,8 +392,7 @@ SpriteStatic* initSpriteStatic(const SpriteAtlas* atlas, int srcX, int srcY, int
 //initializes struct's members
 //current frame should be set to 0 unless you want to start the animation after its beginning
 SpriteAnimated* initSpriteAnimated(const SpriteAtlas* atlas, int srcX, int srcY, int w, int h, SpriteCenter center, int frames, float currentFrame, float spd, AnimationLoop loopBehavior) {
-	SpriteAnimated* sprite = malloc(sizeof(SpriteAnimated));
-	memset(sprite, 0, sizeof(SpriteAnimated));
+	SpriteAnimated* sprite = calloc(1, sizeof(SpriteAnimated));
 	sprite->atlas = atlas;
 	//convert these bits into pixels now for quicker calculations later
 	sprite->srcX = srcX * SPRITE_ATLAS_CELL_W;
