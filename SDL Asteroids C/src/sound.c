@@ -35,23 +35,24 @@ void initSounds(void) {
 }
 
 //put all this tedious code in a function so i don't have to look at it
+//NOTE: make a wrapper for Mix_LoadWav() that outputs a warning message when an audio file isn't found
 static void loadSounds(void) {
 	//gameplay sounds
-	sounds[SFX_ENEMY_HIT] = Mix_LoadWAV("sound/gameplay/SFX_Enemy_Hit.wav");
-	sounds[SFX_ENEMY_KILL] = Mix_LoadWAV("sound/gameplay/SFX_Kill_Enemy.wav");
-	sounds[SFX_PLAYER_HIT] = Mix_LoadWAV("sound/gameplay/SFX_Player_Hit.wav");
-	sounds[SFX_PLAYER_KILL] = Mix_LoadWAV("sound/gameplay/SFX_Kill_Player.wav");
-	sounds[SFX_POWER_UP] = Mix_LoadWAV("sound/gameplay/SFX_Power_Up.wav");
-	sounds[SFX_SHOT_FIRE_1] = Mix_LoadWAV("sound/gameplay/SFX_Shot_Fire_1.wav");
-	sounds[SFX_SHOT_FIRE_2] = Mix_LoadWAV("sound/gameplay/SFX_Shot_Fire_2.wav");
-	sounds[SFX_SHOT_FIRE_3] = Mix_LoadWAV("sound/gameplay/SFX_Shot_Fire_3.wav");
-	sounds[SFX_SHOT_FIRE_4] = Mix_LoadWAV("sound/gameplay/SFX_Shot_Fire_4.wav");
-	sounds[SFX_SHOT_FIRE_5] = Mix_LoadWAV("sound/gameplay/SFX_Shot_Fire_5.wav");
+	sounds[SFX_ENEMY_HIT] = Mix_LoadWAV("sound/gameplay/AC_SFX_Enemy_Hit.ogg");
+	sounds[SFX_ENEMY_KILL] = Mix_LoadWAV("sound/gameplay/AC_SFX_Kill_Enemy.ogg");
+	sounds[SFX_PLAYER_HIT] = Mix_LoadWAV("sound/gameplay/AC_SFX_Player_Hit.ogg");
+	sounds[SFX_PLAYER_KILL] = Mix_LoadWAV("sound/gameplay/AC_SFX_Kill_Player.ogg");
+	sounds[SFX_POWER_UP] = Mix_LoadWAV("sound/gameplay/AC_SFX_Power_Up.ogg");
+	sounds[SFX_SHOT_FIRE_1] = Mix_LoadWAV("sound/gameplay/AC_SFX_Shot_Fire_1.ogg");
+	sounds[SFX_SHOT_FIRE_2] = Mix_LoadWAV("sound/gameplay/AC_SFX_Shot_Fire_2.ogg");
+	sounds[SFX_SHOT_FIRE_3] = Mix_LoadWAV("sound/gameplay/AC_SFX_Shot_Fire_3.ogg");
+	sounds[SFX_SHOT_FIRE_4] = Mix_LoadWAV("sound/gameplay/AC_SFX_Shot_Fire_4.ogg");
+	sounds[SFX_SHOT_FIRE_5] = Mix_LoadWAV("sound/gameplay/AC_SFX_Shot_Fire_5.ogg");
 	//ui sounds
-	sounds[SFX_ACCEPT] = Mix_LoadWAV("sound/ui/SFX_Accept.wav");
-	sounds[SFX_BIG_ACCEPT] = Mix_LoadWAV("sound/ui/SFX_Big_Accept.wav");
-	sounds[SFX_CLICK] = Mix_LoadWAV("sound/ui/SFX_Click.wav");
-	sounds[SFX_DECLINE] = Mix_LoadWAV("sound/ui/SFX_Decline.wav");
+	sounds[SFX_ACCEPT] = Mix_LoadWAV("sound/ui/AC_SFX_Accept.ogg");
+	sounds[SFX_BIG_ACCEPT] = Mix_LoadWAV("sound/ui/AC_SFX_Big_Accept.ogg");
+	sounds[SFX_CLICK] = Mix_LoadWAV("sound/ui/AC_SFX_Click.ogg");
+	sounds[SFX_DECLINE] = Mix_LoadWAV("sound/ui/AC_SFX_Decline.ogg");
 }
 
 //loads the music file referred to with "filename".

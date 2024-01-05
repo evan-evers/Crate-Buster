@@ -59,9 +59,13 @@ int main(int argc, char* argv[]) {
 
 		app.delegate.draw();
 
-		drawCursor();	//cursor will be drawn over everything else in the scene
+		drawCursor();	//cursor will always be drawn over everything else in the scene
 
 		presentScene();
+
+		//hack to get a somewhat consistent ~60 fps without delta time
+		//calculations assumed to take around 1.6 ms per frame
+		SDL_Delay(15);
 	}
 
 	//clean up

@@ -8,6 +8,7 @@
 #include "particles.h"
 #include "player.h"
 #include "scrap.h"
+#include "sound.h"
 #include "stage.h"
 
 extern App app;

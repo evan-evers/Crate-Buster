@@ -146,7 +146,7 @@ static void ssBeginningUpdate(void) {
 
 		//start music if on first stage
 		if (stage.level == 1) {
-			loadMusic("sound/music/Asteroids_Clone_Gameplay_Theme.wav");
+			loadMusic("sound/music/AC_Music_Gameplay_Theme.ogg");
 			playMusic(true);
 		}
 

@@ -39,7 +39,7 @@ void initMainMenu(void) {
 	initHighscores();
 
 	//start music
-	loadMusic("sound/music/Asteroids_Clone_Menu_Theme.wav");
+	loadMusic("sound/music/AC_Music_Menu_Theme.ogg");
 	playMusic(true);
 }
 

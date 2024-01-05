@@ -30,9 +30,9 @@ bool initSDL(void) {
 		printf("WARNING - nearest pixel sampling could not be enabled.\n");
 	}
 
-	//Create program window wherever the OS wants it (args 2 and 3)
+	//Create program window wherever the OS wants it (args 1 and 2)
 	//NOTE: Window title declared here
-	app.window = SDL_CreateWindow("Working Title", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	app.window = SDL_CreateWindow("Crate Buster", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 	if (app.window == NULL) {
 		printf("ERROR - Window could not be created: %s\n", SDL_GetError());
 		success = false;
@@ -40,7 +40,7 @@ bool initSDL(void) {
 
 	//Create renderer. Let SDL use whatever graphics acceleration device it wants (arg 2).
 	//Using vsync to cap framerate
-	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	app.renderer = SDL_CreateRenderer(app.window, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
 	if (app.renderer == NULL) {
 		printf("ERROR - Renderer could not be created: %s\n", SDL_GetError());
 		success = false;
